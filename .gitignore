@@ -1,0 +1,38 @@
+# CoffeeGrams — repository ignore rules
+# Covers Swift Package Manager, Xcode, and macOS artifacts.
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+## Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved      # keep out for an app; re-add if you want pinned deps committed
+
+## Xcode (app target, added in M5+)
+DerivedData/
+build/
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Xcode project user-specific files (keep the shared .xcodeproj/.xcworkspace)
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+
+## Secrets / signing — never commit these
+*.p12
+*.mobileprovision
+*.cer
+AuthKey_*.p8
+.env
+secrets.xcconfig
