@@ -23,24 +23,37 @@ struct CalculatorView: View {
 
     var body: some View {
         Form {
-            Section("Direction") {
+            Section {
+                ResultView(grams: vm.resultGrams, label: vm.resultLabel)
+            }
+            .listRowBackground(Color.cgSurface)
+
+            Section {
                 Picker("Mode", selection: $vm.mode) {
                     ForEach(CalculatorViewModel.Mode.allCases) { mode in
                         Text(mode.title).tag(mode)
                     }
                 }
                 .pickerStyle(.segmented)
+            } header: {
+                sectionHeader("Direction")
             }
+            .listRowBackground(Color.cgSurface)
 
-            Section(inputSectionTitle) {
+            Section {
                 HStack {
                     TextField("Grams", value: inputBinding, format: .number)
                         .keyboardType(.decimalPad)
-                    Text("g").foregroundStyle(.secondary)
+                        .font(.title3)
+                        .foregroundStyle(Color.cgTextPrimary)
+                    Text("g").foregroundStyle(Color.cgTextSecondary)
                 }
+            } header: {
+                sectionHeader(inputSectionTitle)
             }
+            .listRowBackground(Color.cgSurface)
 
-            Section("Ratio  \(vm.ratioLabel)") {
+            Section {
                 Slider(
                     value: $vm.ratio,
                     in: vm.ratioRange,
@@ -49,17 +62,27 @@ struct CalculatorView: View {
                     Text("Ratio")
                 } minimumValueLabel: {
                     Text("1:\(Int(vm.ratioRange.lowerBound))")
+                        .foregroundStyle(Color.cgTextSecondary)
                 } maximumValueLabel: {
                     Text("1:\(Int(vm.ratioRange.upperBound))")
+                        .foregroundStyle(Color.cgTextSecondary)
                 }
+            } header: {
+                sectionHeader("Ratio  \(vm.ratioLabel)")
             }
-
-            Section {
-                ResultView(grams: vm.resultGrams, label: vm.resultLabel)
-            }
+            .listRowBackground(Color.cgSurface)
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.cgBackground.ignoresSafeArea())
         .navigationTitle(vm.method.displayName)
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    /// A consistently styled section header in the muted secondary tone.
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(Color.cgTextSecondary)
     }
 
     /// Section header for the input field, which changes with the direction.
@@ -80,26 +103,27 @@ struct CalculatorView: View {
     }
 }
 
-/// The headline result readout.
+/// The headline result readout — the biggest, boldest thing on the screen.
 private struct ResultView: View {
     let grams: Double
     let label: String
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 6) {
             Text(label.uppercased())
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.cgTextSecondary)
             (
                 Text(grams, format: .number.precision(.fractionLength(0)))
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .font(.system(size: 64, weight: .bold, design: .rounded))
                 + Text(" g")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
+                    .font(.title2)
+                    .foregroundStyle(Color.cgTextSecondary)
             )
+            .foregroundStyle(Color.cgTextPrimary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
+        .padding(.vertical, 12)
         // One combined element so VoiceOver reads "Water, 288 grams" not three
         // separate fragments. (Full accessibility pass happens in M10.)
         .accessibilityElement(children: .ignore)
@@ -111,4 +135,6 @@ private struct ResultView: View {
     NavigationStack {
         CalculatorView(method: .v60)
     }
+    .fontDesign(.rounded)
+    .tint(.cgAccent)
 }

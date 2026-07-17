@@ -18,7 +18,12 @@ struct MethodPickerView: View {
                 NavigationLink(value: method) {
                     MethodRow(method: method)
                 }
+                .listRowBackground(Color.cgSurface)
             }
+            .listStyle(.insetGrouped)
+            // Hide the system grouped background so our cream shows through.
+            .scrollContentBackground(.hidden)
+            .background(Color.cgBackground.ignoresSafeArea())
             .navigationTitle("CoffeeGrams")
             .navigationDestination(for: BrewMethod.self) { method in
                 CalculatorView(method: method)
@@ -34,27 +39,36 @@ private struct MethodRow: View {
     private var profile: BrewMethodProfile { .profile(for: method) }
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 16) {
+            Image(systemName: method.iconSystemName)
+                .font(.title2)
+                .foregroundStyle(Color.cgTextPrimary)
+                .frame(width: 34)
+
+            VStack(alignment: .leading, spacing: 3) {
                 Text(method.displayName)
-                    .font(.headline)
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(Color.cgTextPrimary)
                 Text(subtitle)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.cgTextSecondary)
             }
+
             Spacer()
+
             // Placeholder marker for paid methods. It doesn't lock anything yet —
-            // the in-app purchase gating arrives in M9. For now every method is
-            // fully usable so we can build and test the flow.
+            // the in-app purchase gating arrives in M9. Gold here is one of the
+            // few accent uses, keeping to the 60-30-10 discipline.
             if !method.isFreeTier {
                 Text("PRO")
                     .font(.caption2.weight(.bold))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(.secondary.opacity(0.2), in: Capsule())
+                    .foregroundStyle(Color.cgAccent)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(Color.cgAccent.opacity(0.15), in: Capsule())
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 6)
     }
 
     private var subtitle: String {
@@ -72,4 +86,6 @@ private struct MethodRow: View {
 
 #Preview {
     MethodPickerView()
+        .fontDesign(.rounded)
+        .tint(.cgAccent)
 }

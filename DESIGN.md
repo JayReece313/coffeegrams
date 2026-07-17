@@ -67,4 +67,9 @@ no native SwiftUI support, battery cost. Instead:
 1. Design foundation (tokens + type) applied to `MethodPickerView` /
    `CalculatorView` — before M6.
 2. M6 guided-brew timer built on the theme (gold active-state baked in).
-3. M11: custom method icon set, optional Lottie motion, app icon, launch screen.
+3. M11: custom method icon set, optional Lottie motion, app icon, launch screen,
+   and the **branded navigation header** (cream bar + espresso large title). The
+   latter is deferred because the global `UINavigationBarAppearance` proxy hides
+   the large title under iOS 26 + SwiftUI `NavigationStack`; the fix is a native
+   SwiftUI header view rather than the UIKit appearance API. For now the default
+   nav bar (rounded dark title on cream) is used.
