@@ -10,6 +10,10 @@ import Testing
 @testable import CoffeeGrams
 import CoffeeGramsCore
 
+// The ViewModel is main-actor isolated (UI state), so its tests must run on the
+// main actor too. Under Swift 6's strict concurrency this is required, not
+// optional — the compiler won't let a nonisolated test touch main-actor state.
+@MainActor
 @Suite("CalculatorViewModel")
 struct CalculatorViewModelTests {
 
