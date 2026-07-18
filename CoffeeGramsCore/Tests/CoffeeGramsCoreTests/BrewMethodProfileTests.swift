@@ -83,9 +83,9 @@ struct BrewMethodProfileTests {
         }
     }
 
-    @Test("free tier is exactly V60 + French Press")
+    @Test("free tier is exactly French Press")
     func freeTierSplit() {
         let free = BrewMethod.allCases.filter(\.isFreeTier)
-        #expect(Set(free) == [.v60, .frenchPress])
+        #expect(Set(free) == [.frenchPress])
     }
 }

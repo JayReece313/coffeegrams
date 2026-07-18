@@ -1,0 +1,38 @@
+{
+  "identifier" : "B7E2F1A0-COFFEE-4C0F-9A1B-CG0000000001",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "B7E2F1A0-COFFEE-4C0F-9A1B-CG0000000002",
+      "localizations" : [
+        {
+          "description" : "Unlock all brewing methods and features — one-time purchase, yours forever.",
+          "displayName" : "CoffeeGrams Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.jrlabs.coffeegrams.pro",
+      "referenceName" : "CoffeeGrams Pro",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

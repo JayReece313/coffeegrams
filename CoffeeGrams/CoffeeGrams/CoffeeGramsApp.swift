@@ -10,6 +10,9 @@ import SwiftData
 
 @main
 struct CoffeeGramsApp: App {
+    /// App-wide in-app-purchase entitlement state, injected into the environment.
+    @State private var purchases = PurchaseController()
+
     /// `nil` while unit-testing. If the host app also creates a ModelContainer
     /// for BrewLogRecord, then *two* containers for the same @Model coexist with
     /// the per-test containers, which SwiftData traps on (flakily). The unit
@@ -38,6 +41,8 @@ struct CoffeeGramsApp: App {
     var body: some Scene {
         WindowGroup {
             content
+                .environment(purchases)
+                .task { await purchases.start() }
         }
     }
 

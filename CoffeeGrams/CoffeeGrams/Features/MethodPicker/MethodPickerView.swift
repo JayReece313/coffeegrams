@@ -3,25 +3,23 @@
 //  CoffeeGrams
 //
 //  The app's root screen: pick a brew method, then drill into its calculator.
+//  Locked (Pro) methods present the paywall instead of navigating.
 //
 
 import SwiftUI
 import CoffeeGramsCore
 
 struct MethodPickerView: View {
+    @Environment(PurchaseController.self) private var purchases
+    @State private var showPaywall = false
+
     var body: some View {
-        // NavigationStack manages a push/pop navigation hierarchy. Tapping a row
-        // pushes the matching CalculatorView via the value-based destination
-        // below (a type-safe alternative to wiring each NavigationLink by hand).
         NavigationStack {
             List(BrewMethod.allCases) { method in
-                NavigationLink(value: method) {
-                    MethodRow(method: method)
-                }
-                .listRowBackground(Color.cgSurface)
+                row(for: method)
+                    .listRowBackground(Color.cgSurface)
             }
             .listStyle(.insetGrouped)
-            // Hide the system grouped background so our cream shows through.
             .scrollContentBackground(.hidden)
             .background(Color.cgBackground.ignoresSafeArea())
             .navigationTitle("CoffeeGrams")
@@ -29,6 +27,16 @@ struct MethodPickerView: View {
                 CalculatorView(method: method)
             }
             .toolbar {
+                if !purchases.isPremiumUnlocked {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showPaywall = true
+                        } label: {
+                            Label("Unlock Pro", systemImage: "lock.open")
+                        }
+                        .tint(.cgAccent)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
                         LogView()
@@ -39,12 +47,33 @@ struct MethodPickerView: View {
                 }
             }
         }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
+    }
+
+    /// A navigable row for accessible methods; a paywall-triggering button for
+    /// locked ones.
+    @ViewBuilder
+    private func row(for method: BrewMethod) -> some View {
+        if purchases.canAccess(method) {
+            NavigationLink(value: method) {
+                MethodRow(method: method, locked: false)
+            }
+        } else {
+            Button {
+                showPaywall = true
+            } label: {
+                MethodRow(method: method, locked: true)
+            }
+        }
     }
 }
 
 /// One row in the method list.
 private struct MethodRow: View {
     let method: BrewMethod
+    let locked: Bool
 
     private var profile: BrewMethodProfile { .profile(for: method) }
 
@@ -66,19 +95,19 @@ private struct MethodRow: View {
 
             Spacer()
 
-            // Placeholder marker for paid methods. It doesn't lock anything yet —
-            // the in-app purchase gating arrives in M9. Gold here is one of the
-            // few accent uses, keeping to the 60-30-10 discipline.
-            if !method.isFreeTier {
-                Text("PRO")
+            if locked {
+                Label("PRO", systemImage: "lock.fill")
+                    .labelStyle(.titleAndIcon)
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(Color.cgAccent)
-                    .padding(.horizontal, 7)
+                    .padding(.horizontal, 8)
                     .padding(.vertical, 3)
                     .background(Color.cgAccent.opacity(0.15), in: Capsule())
             }
         }
         .padding(.vertical, 6)
+        // Locked rows still read their normal colour; the lock chip conveys state
+        // (plus the paywall on tap), so we don't rely on colour alone.
     }
 
     private var subtitle: String {
@@ -96,6 +125,16 @@ private struct MethodRow: View {
 
 #Preview {
     MethodPickerView()
+        .environment(PurchaseController(provider: PreviewPurchaseProvider()))
         .fontDesign(.rounded)
         .tint(.cgAccent)
+}
+
+/// A preview-only provider so the picker renders without StoreKit.
+private struct PreviewPurchaseProvider: PurchaseProviding {
+    func isPurchased() async -> Bool { false }
+    func localizedPrice() async -> String? { "$4.99" }
+    func purchase() async throws -> PurchaseOutcome { .purchased }
+    func restore() async -> Bool { false }
+    func entitlementUpdates() -> AsyncStream<Bool> { AsyncStream { $0.finish() } }
 }

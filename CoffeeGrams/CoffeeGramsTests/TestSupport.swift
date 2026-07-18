@@ -49,3 +49,30 @@ final class SpyNotificationService: NotificationScheduling {
         cancelledIDs.append(id)
     }
 }
+
+enum PurchaseTestError: Error { case failed }
+
+/// A controllable stand-in for StoreKit so purchase/gating flows are testable.
+@MainActor
+final class FakePurchaseProvider: PurchaseProviding {
+    var purchased: Bool
+    var price: String? = "$4.99"
+    var outcome: PurchaseOutcome = .purchased
+    var throwOnPurchase = false
+
+    init(purchased: Bool = false) {
+        self.purchased = purchased
+    }
+
+    func isPurchased() async -> Bool { purchased }
+    func localizedPrice() async -> String? { price }
+
+    func purchase() async throws -> PurchaseOutcome {
+        if throwOnPurchase { throw PurchaseTestError.failed }
+        if outcome == .purchased { purchased = true }
+        return outcome
+    }
+
+    func restore() async -> Bool { purchased }
+    func entitlementUpdates() -> AsyncStream<Bool> { AsyncStream { $0.finish() } }
+}

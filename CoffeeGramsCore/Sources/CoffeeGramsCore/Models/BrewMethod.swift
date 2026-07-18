@@ -29,12 +29,16 @@ public enum BrewMethod: String, CaseIterable, Codable, Sendable, Identifiable, H
         }
     }
 
-    /// The two methods available for free; the rest are unlocked by the
-    /// one-time in-app purchase. Encoded here (not in the paywall UI) so the
-    /// free/paid split has a single source of truth the tests can assert.
+    /// The method(s) available for free; the rest are unlocked by the one-time
+    /// in-app purchase. Encoded here (not in the paywall UI) so the free/paid
+    /// split has a single source of truth the tests can assert.
+    ///
+    /// v1: only French Press is free — the most accessible, popular method —
+    /// with its full experience (calculator, timer, log). Widening the free tier
+    /// later (e.g. adding V60) is a one-line change here.
     public var isFreeTier: Bool {
         switch self {
-        case .v60, .frenchPress: true
+        case .frenchPress: true
         default: false
         }
     }
