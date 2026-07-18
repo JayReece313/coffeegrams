@@ -5,6 +5,8 @@
 //  Espresso is deliberately shallow (spec §4.6): a target yield and a shot
 //  stopwatch that reads green inside the 25–30s window, amber before, red after.
 //
+//  Like the guided-brew VM, this holds no background timer — the view ticks it.
+//
 
 import Foundation
 import Observation
@@ -21,7 +23,6 @@ final class EspressoShotViewModel {
 
     private let clock: MonotonicClock
     private var startTime: TimeInterval = 0
-    private var tickTask: Task<Void, Never>?
 
     init(target: EspressoTarget, clock: MonotonicClock = SystemClock()) {
         self.target = target
@@ -44,21 +45,10 @@ final class EspressoShotViewModel {
         isRunning = true
         elapsedSeconds = 0
         startTime = clock.now
-        tickTask?.cancel()
-        tickTask = Task { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(100))
-                guard let self else { return }
-                self.tickOnce()
-                if !self.isRunning { break }
-            }
-        }
     }
 
     func stop() {
         isRunning = false
-        tickTask?.cancel()
-        tickTask = nil
     }
 
     func reset() {
@@ -66,8 +56,8 @@ final class EspressoShotViewModel {
         elapsedSeconds = 0
     }
 
-    /// Recompute elapsed whole seconds from the clock. Internal so tests can
-    /// drive it with a fake clock.
+    /// Recompute elapsed whole seconds from the clock. A no-op when stopped, so
+    /// the view can call it on a steady timer. Tests call it with a fake clock.
     func tickOnce() {
         guard isRunning else { return }
         elapsedSeconds = max(0, Int(clock.now - startTime))

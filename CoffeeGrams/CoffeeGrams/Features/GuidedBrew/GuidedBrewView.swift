@@ -6,13 +6,27 @@
 //
 
 import SwiftUI
+import SwiftData
+import Combine
 import CoffeeGramsCore
 
 struct GuidedBrewView: View {
+    @Environment(\.modelContext) private var modelContext
     @State private var vm: GuidedBrewViewModel
+    @State private var saved = false
 
-    init(timeline: BrewTimeline) {
+    /// Drives the countdown. `tickOnce()` is a no-op unless a step is running,
+    /// so we can leave this firing steadily while the screen is visible.
+    private let ticker = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+
+    /// Dose and ratio are carried so a completed brew can be written to the log.
+    private let doseGrams: Double
+    private let ratio: Double
+
+    init(timeline: BrewTimeline, doseGrams: Double, ratio: Double) {
         _vm = State(initialValue: GuidedBrewViewModel(timeline: timeline))
+        self.doseGrams = doseGrams
+        self.ratio = ratio
     }
 
     var body: some View {
@@ -33,6 +47,7 @@ struct GuidedBrewView: View {
         .background(Color.cgBackground.ignoresSafeArea())
         .navigationTitle(vm.timeline.method.displayName)
         .navigationBarTitleDisplayMode(.inline)
+        .onReceive(ticker) { _ in vm.tickOnce() }
     }
 
     // MARK: Timer
@@ -110,7 +125,21 @@ struct GuidedBrewView: View {
     @ViewBuilder
     private var controls: some View {
         if vm.isFinished {
-            brewButton("Brew Again", role: .secondary) { vm.reset() }
+            VStack(spacing: 12) {
+                if saved {
+                    Label("Saved to log", systemImage: "checkmark.circle.fill")
+                        .font(.headline)
+                        .foregroundStyle(Color.cgAccent)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                } else {
+                    brewButton("Save to Log") { saveToLog() }
+                }
+                brewButton("Brew Again", role: .secondary) {
+                    vm.reset()
+                    saved = false
+                }
+            }
         } else if vm.isIdle {
             brewButton("Start Brew") { vm.start() }
         } else if vm.isAwaitingManualAdvance {
@@ -145,6 +174,17 @@ struct GuidedBrewView: View {
             in: RoundedRectangle(cornerRadius: 14)
         )
         .foregroundStyle(role == .primary ? Color.white : Color.cgTextPrimary)
+    }
+
+    private func saveToLog() {
+        let entry = BrewLogEntry(
+            method: vm.timeline.method,
+            doseGrams: doseGrams,
+            waterGrams: vm.timeline.totalWaterGrams,
+            ratio: ratio
+        )
+        try? BrewLogStore(context: modelContext).add(entry)
+        saved = true
     }
 }
 
@@ -207,7 +247,9 @@ private struct StepRow: View {
         GuidedBrewView(
             timeline: BrewTimelineBuilder.buildPulsePourTimeline(
                 profile: .v60, doseGrams: 18, ratio: 16
-            )
+            ),
+            doseGrams: 18,
+            ratio: 16
         )
     }
     .fontDesign(.rounded)

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct CoffeeGramsApp: App {
@@ -19,6 +20,13 @@ struct CoffeeGramsApp: App {
                 .fontDesign(.rounded)
                 .tint(.cgAccent)
         }
+        // On-device SwiftData store for the brew log. This injects a
+        // modelContext into the environment for the whole view tree.
+        //
+        // CloudKit seam: to sync across the user's devices later, swap this for
+        // a `ModelConfiguration(..., cloudKitDatabase: .automatic)` behind a
+        // Settings toggle (deferred to M7.1 — needs the iCloud capability).
+        .modelContainer(for: BrewLogRecord.self)
     }
 }
 

@@ -3,8 +3,12 @@
 //  CoffeeGrams
 //
 //  Drives the guided-brew timer screen. It owns the tested BrewTimerEngine and
-//  mirrors its state into observable properties the view can render, ticking the
-//  engine forward in real time.
+//  mirrors its state into observable properties the view can render.
+//
+//  The VM holds NO background timer of its own: the view drives the cadence by
+//  calling `tickOnce()` on a periodic timer while a brew is running. Keeping the
+//  clock loop in the view means the VM is a pure, synchronous state machine —
+//  no leaked Tasks, and tests advance a fake clock and call `tickOnce()` by hand.
 //
 
 import Foundation
@@ -18,10 +22,6 @@ final class GuidedBrewViewModel {
     let timeline: BrewTimeline
 
     // MARK: Mirrored display state
-    //
-    // BrewTimerEngine is a plain (non-observable) state machine, so we copy the
-    // values the UI needs into these observable properties after every change.
-    // The view reads these, and `@Observable` refreshes it automatically.
     private(set) var phase: BrewTimerPhase = .idle
     private(set) var currentStepIndex: Int = 0
     private(set) var remainingSeconds: Int = 0
@@ -32,7 +32,6 @@ final class GuidedBrewViewModel {
     private let clock: MonotonicClock
     private let haptics: HapticsPerforming
 
-    private var tickTask: Task<Void, Never>?
     /// The clock reading at the last tick, used to compute the delta to advance.
     private var lastTickTime: TimeInterval = 0
 
@@ -69,12 +68,10 @@ final class GuidedBrewViewModel {
         engine.start()
         lastTickTime = clock.now
         syncFromEngine()
-        startTickingIfRunning()
     }
 
     func pause() {
         engine.pause()
-        stopTicking()
         syncFromEngine()
     }
 
@@ -82,7 +79,6 @@ final class GuidedBrewViewModel {
         engine.resume()
         lastTickTime = clock.now
         syncFromEngine()
-        startTickingIfRunning()
     }
 
     /// The "Next"/"Done" action for a manual step (or a deliberate skip).
@@ -90,20 +86,18 @@ final class GuidedBrewViewModel {
         engine.advanceStep()
         lastTickTime = clock.now
         syncFromEngine()
-        startTickingIfRunning()
     }
 
     func reset() {
-        stopTicking()
         engine.reset()
         syncFromEngine()
     }
 
-    // MARK: Ticking
+    // MARK: Ticking (called by the view's timer, or by tests directly)
 
-    /// Advance the engine by the real time elapsed since the last tick. Exposed
-    /// (internal) so tests can drive it deterministically with a fake clock
-    /// instead of waiting in real time.
+    /// Advance the engine by the real time elapsed since the last tick. A no-op
+    /// unless a timed step is running, so the view can call it on a steady timer
+    /// without worrying about the current phase.
     func tickOnce() {
         guard phase == .running else { return }
         let now = clock.now
@@ -111,26 +105,6 @@ final class GuidedBrewViewModel {
         lastTickTime = now
         engine.advance(by: delta)
         syncFromEngine()
-    }
-
-    private func startTickingIfRunning() {
-        guard phase == .running else { return }
-        tickTask?.cancel()
-        tickTask = Task { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(100))
-                guard let self else { return }
-                self.tickOnce()
-                // Stop the loop once we leave the running state (manual step,
-                // pause, or completion) — it restarts on the next control action.
-                if self.phase != .running { break }
-            }
-        }
-    }
-
-    private func stopTicking() {
-        tickTask?.cancel()
-        tickTask = nil
     }
 
     // MARK: Engine bridging
@@ -149,8 +123,8 @@ final class GuidedBrewViewModel {
     private func syncFromEngine() {
         phase = engine.phase
         currentStepIndex = engine.currentStepIndex
-        // Round up so a step that has 0.3s left still reads "1", never "0:00"
-        // while it's still going.
+        // Round up so a step with 0.3s left still reads "1", never "0:00" while
+        // it's still going.
         remainingSeconds = Int((engine.remainingInStep ?? 0).rounded(.up))
         fractionComplete = engine.fractionComplete
     }

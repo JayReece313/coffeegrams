@@ -21,7 +21,7 @@ struct BrewSessionView: View {
             if let timeline = BrewTimelineBuilder.timeline(
                 for: method, doseGrams: doseGrams, ratio: ratio
             ) {
-                GuidedBrewView(timeline: timeline)
+                GuidedBrewView(timeline: timeline, doseGrams: doseGrams, ratio: ratio)
             } else {
                 // Unreachable for these methods, but we never force-unwrap.
                 unavailable

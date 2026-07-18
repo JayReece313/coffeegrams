@@ -8,13 +8,16 @@
 //
 
 import SwiftUI
+import SwiftData
 import CoffeeGramsCore
 
 struct ColdBrewPlanView: View {
     let doseGrams: Double
     let ratio: Double
 
+    @Environment(\.modelContext) private var modelContext
     @State private var steepHours: Double = 16
+    @State private var saved = false
 
     private var waterGrams: Double {
         BrewCalculator.waterGrams(doseGrams: doseGrams, ratio: ratio)
@@ -59,12 +62,40 @@ struct ColdBrewPlanView: View {
             .multilineTextAlignment(.leading)
 
             Spacer(minLength: 0)
+
+            if saved {
+                Label("Saved to log", systemImage: "checkmark.circle.fill")
+                    .font(.headline)
+                    .foregroundStyle(Color.cgAccent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            } else {
+                Button(action: saveToLog) {
+                    Text("Save to Log")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                }
+                .background(Color.cgAccent, in: RoundedRectangle(cornerRadius: 14))
+                .foregroundStyle(.white)
+            }
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.cgBackground.ignoresSafeArea())
         .navigationTitle("Cold Brew")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func saveToLog() {
+        let entry = BrewLogEntry(
+            method: .coldBrew,
+            doseGrams: doseGrams,
+            waterGrams: waterGrams,
+            ratio: ratio
+        )
+        try? BrewLogStore(context: modelContext).add(entry)
+        saved = true
     }
 
     private func metric(_ label: String, _ value: String) -> some View {

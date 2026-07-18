@@ -28,6 +28,16 @@ struct MethodPickerView: View {
             .navigationDestination(for: BrewMethod.self) { method in
                 CalculatorView(method: method)
             }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        LogView()
+                    } label: {
+                        Image(systemName: "list.bullet.rectangle")
+                            .accessibilityLabel("Brew log")
+                    }
+                }
+            }
         }
     }
 }

@@ -7,10 +7,17 @@
 //
 
 import SwiftUI
+import SwiftData
+import Combine
 import CoffeeGramsCore
 
 struct EspressoShotView: View {
+    @Environment(\.modelContext) private var modelContext
     @State private var vm: EspressoShotViewModel
+    @State private var saved = false
+
+    /// Drives the shot stopwatch; `tickOnce()` no-ops unless the shot is running.
+    private let ticker = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
     init(target: EspressoTarget) {
         _vm = State(initialValue: EspressoShotViewModel(target: target))
@@ -54,7 +61,16 @@ struct EspressoShotView: View {
             .foregroundStyle(.white)
 
             if vm.hasStarted && !vm.isRunning {
-                Button("Reset") { vm.reset() }
+                if saved {
+                    Label("Saved to log", systemImage: "checkmark.circle.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.cgAccent)
+                } else {
+                    Button("Save to Log") { saveToLog() }
+                        .font(.headline)
+                        .foregroundStyle(Color.cgAccent)
+                }
+                Button("Reset") { vm.reset(); saved = false }
                     .foregroundStyle(Color.cgTextSecondary)
             }
         }
@@ -63,6 +79,7 @@ struct EspressoShotView: View {
         .background(Color.cgBackground.ignoresSafeArea())
         .navigationTitle("Espresso")
         .navigationBarTitleDisplayMode(.inline)
+        .onReceive(ticker) { _ in vm.tickOnce() }
     }
 
     private var targetCard: some View {
@@ -86,6 +103,18 @@ struct EspressoShotView: View {
                 .font(.title.weight(.bold))
                 .foregroundStyle(Color.cgTextPrimary)
         }
+    }
+
+    private func saveToLog() {
+        let entry = BrewLogEntry(
+            method: .espresso,
+            doseGrams: vm.target.doseGrams,
+            waterGrams: vm.target.targetYieldGrams,
+            ratio: vm.target.ratio,
+            shotSeconds: vm.elapsedSeconds
+        )
+        try? BrewLogStore(context: modelContext).add(entry)
+        saved = true
     }
 
     // MARK: Shot-window state → colour + caption
