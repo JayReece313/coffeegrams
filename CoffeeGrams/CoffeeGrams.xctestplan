@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "A1B2C3D4-1111-2222-3333-444455556666",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:CoffeeGrams.xcodeproj",
+      "identifier" : "4A2008B5300AAC0800E17B84",
+      "name" : "CoffeeGrams"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:CoffeeGrams.xcodeproj",
+        "identifier" : "4A2008C2300AAC0900E17B84",
+        "name" : "CoffeeGramsTests"
+      }
+    }
+  ],
+  "version" : 1
+}

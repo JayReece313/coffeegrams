@@ -9,8 +9,9 @@ import Testing
 @testable import CoffeeGrams
 import CoffeeGramsCore
 
-@Suite("Time formatting")
-struct TimeFormatTests {
+extension AppTests {
+  @Suite("Time formatting")
+  struct TimeFormatTests {
     @Test("formats seconds as M:SS")
     func mmss() {
         #expect(TimeFormat.mmss(0) == "0:00")
@@ -41,4 +42,5 @@ struct BrewStepPresentationTests {
         #expect(BrewStep.pour(pourNumber: 1, targetCumulativeGrams: 200, duration: 45).instruction.contains("200 g"))
         #expect(!BrewStep.plunge.instruction.isEmpty)
     }
+  }
 }

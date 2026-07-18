@@ -7,9 +7,10 @@ import Testing
 @testable import CoffeeGrams
 import CoffeeGramsCore
 
-@MainActor
-@Suite("EspressoShotViewModel")
-struct EspressoShotViewModelTests {
+extension AppTests {
+  @MainActor
+  @Suite("EspressoShotViewModel")
+  struct EspressoShotViewModelTests {
 
     private func makeVM(clock: FakeClock) -> EspressoShotViewModel {
         let target = BrewTimelineBuilder.buildEspressoTarget(doseGrams: 18, ratio: 2)
@@ -70,4 +71,5 @@ struct EspressoShotViewModelTests {
         #expect(vm.elapsedSeconds == 0)
         #expect(!vm.hasStarted)
     }
+  }
 }

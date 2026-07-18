@@ -10,23 +10,51 @@ import SwiftData
 
 @main
 struct CoffeeGramsApp: App {
+    /// `nil` while unit-testing. If the host app also creates a ModelContainer
+    /// for BrewLogRecord, then *two* containers for the same @Model coexist with
+    /// the per-test containers, which SwiftData traps on (flakily). The unit
+    /// tests never render the UI, so during tests we skip the host container
+    /// entirely and let each test own the only container in the process.
+    ///
+    /// CloudKit seam: to sync across the user's devices later, add
+    /// `cloudKitDatabase: .automatic` to the ModelConfiguration behind a
+    /// Settings toggle (deferred to M7.1 — needs the iCloud capability).
+    private let container: ModelContainer?
+
+    init() {
+        let isTesting = NSClassFromString("XCTestCase") != nil
+            || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        if isTesting {
+            container = nil
+        } else {
+            do {
+                container = try ModelContainer(for: BrewLogRecord.self)
+            } catch {
+                fatalError("Failed to create the brew-log store: \(error)")
+            }
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
-            // The method picker is the root; it contains its own NavigationStack.
-            MethodPickerView()
-                // Rounded system font app-wide for a warmer, premium feel, and
-                // the caramel-gold accent for every interactive control (slider,
-                // selected segment, back button) in one place.
-                .fontDesign(.rounded)
-                .tint(.cgAccent)
+            content
         }
-        // On-device SwiftData store for the brew log. This injects a
-        // modelContext into the environment for the whole view tree.
-        //
-        // CloudKit seam: to sync across the user's devices later, swap this for
-        // a `ModelConfiguration(..., cloudKitDatabase: .automatic)` behind a
-        // Settings toggle (deferred to M7.1 — needs the iCloud capability).
-        .modelContainer(for: BrewLogRecord.self)
+    }
+
+    // Rounded system font app-wide for a warmer, premium feel, and the
+    // caramel-gold accent for every interactive control, in one place. The
+    // SwiftData container is attached here (on the view) so it can be omitted
+    // under tests.
+    @ViewBuilder
+    private var content: some View {
+        let root = MethodPickerView()
+            .fontDesign(.rounded)
+            .tint(.cgAccent)
+        if let container {
+            root.modelContainer(container)
+        } else {
+            root
+        }
     }
 }
 

@@ -19,6 +19,8 @@ struct GuidedBrewView: View {
     /// so we can leave this firing steadily while the screen is visible.
     private let ticker = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
+    private let notifications: NotificationScheduling = LiveNotificationService()
+
     /// Dose and ratio are carried so a completed brew can be written to the log.
     private let doseGrams: Double
     private let ratio: Double
@@ -48,6 +50,27 @@ struct GuidedBrewView: View {
         .navigationTitle(vm.timeline.method.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .onReceive(ticker) { _ in vm.tickOnce() }
+        .onChange(of: vm.phase) { oldPhase, newPhase in
+            handleFrenchPressReminder(from: oldPhase, to: newPhase)
+        }
+        .onDisappear { notifications.cancel(id: BrewReminder.frenchPressID) }
+    }
+
+    /// French press should be plunged promptly or it turns bitter (spec §4.3),
+    /// so when a FP brew starts we schedule a "plunge now" reminder for when the
+    /// steep ends. It only surfaces if notifications are already authorized — we
+    /// don't prompt mid-brew; in the foreground the haptic + timer already cover
+    /// it. The reminder is cancelled when the brew finishes or the screen closes.
+    private func handleFrenchPressReminder(from old: BrewTimerPhase, to new: BrewTimerPhase) {
+        guard vm.timeline.method == .frenchPress else { return }
+        if old == .idle, new == .running {
+            let reminder = BrewReminder.frenchPressPlunge(
+                steepEndsInSeconds: vm.timeline.totalFixedDuration
+            )
+            Task { await notifications.schedule(reminder) }
+        } else if new == .completed || new == .idle {
+            notifications.cancel(id: BrewReminder.frenchPressID)
+        }
     }
 
     // MARK: Timer

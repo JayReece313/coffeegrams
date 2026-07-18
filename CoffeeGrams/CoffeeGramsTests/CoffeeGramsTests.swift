@@ -13,9 +13,10 @@ import CoffeeGramsCore
 // The ViewModel is main-actor isolated (UI state), so its tests must run on the
 // main actor too. Under Swift 6's strict concurrency this is required, not
 // optional — the compiler won't let a nonisolated test touch main-actor state.
-@MainActor
-@Suite("CalculatorViewModel")
-struct CalculatorViewModelTests {
+extension AppTests {
+  @MainActor
+  @Suite("CalculatorViewModel")
+  struct CalculatorViewModelTests {
 
     @Test("defaults to V60 at its default ratio, dose-first")
     func defaults() {
@@ -78,4 +79,5 @@ struct CalculatorViewModelTests {
         vm.selectMethod(.espresso)
         #expect(vm.ratioStep == 0.25)
     }
+  }
 }

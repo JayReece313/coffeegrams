@@ -6,6 +6,7 @@
 //
 
 import Foundation
+@testable import CoffeeGrams
 import CoffeeGramsCore
 
 /// A clock we control by hand, so timer logic can be tested instantly and
@@ -23,5 +24,28 @@ final class FakeClock: MonotonicClock, @unchecked Sendable {
     /// Move time forward by `seconds`.
     func advance(_ seconds: TimeInterval) {
         now += seconds
+    }
+}
+
+/// Records what would have been scheduled, so notification flows can be tested
+/// without touching the real notification system.
+@MainActor
+final class SpyNotificationService: NotificationScheduling {
+    var authorizationGranted = true
+    private(set) var authRequests = 0
+    private(set) var scheduled: [ScheduledReminder] = []
+    private(set) var cancelledIDs: [String] = []
+
+    func requestAuthorization() async -> Bool {
+        authRequests += 1
+        return authorizationGranted
+    }
+
+    func schedule(_ reminder: ScheduledReminder) async {
+        scheduled.append(reminder)
+    }
+
+    func cancel(id: String) {
+        cancelledIDs.append(id)
     }
 }

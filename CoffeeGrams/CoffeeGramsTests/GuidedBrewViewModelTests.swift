@@ -11,9 +11,10 @@ import Testing
 @testable import CoffeeGrams
 import CoffeeGramsCore
 
-@MainActor
-@Suite("GuidedBrewViewModel")
-struct GuidedBrewViewModelTests {
+extension AppTests {
+  @MainActor
+  @Suite("GuidedBrewViewModel")
+  struct GuidedBrewViewModelTests {
 
     /// V60: bloom(45) + pour1(45) + pour2(45) + drawdown(manual).
     private func makeVM(clock: FakeClock) -> GuidedBrewViewModel {
@@ -107,4 +108,5 @@ struct GuidedBrewViewModelTests {
         #expect(vm.isIdle)
         #expect(vm.currentStepIndex == 0)
     }
+  }
 }
