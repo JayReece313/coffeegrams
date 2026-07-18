@@ -21,6 +21,9 @@ struct GuidedBrewView: View {
 
     private let notifications: NotificationScheduling = LiveNotificationService()
 
+    /// Scales the countdown with Dynamic Type.
+    @ScaledMetric(relativeTo: .largeTitle) private var timerSize: CGFloat = 72
+
     /// Dose and ratio are carried so a completed brew can be written to the log.
     private let doseGrams: Double
     private let ratio: Double
@@ -88,7 +91,7 @@ struct GuidedBrewView: View {
                     .foregroundStyle(Color.cgTextPrimary)
             } else {
                 Text(TimeFormat.mmss(vm.remainingSeconds))
-                    .font(.system(size: 72, weight: .bold, design: .rounded))
+                    .font(.system(size: timerSize, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .contentTransition(.numericText())
                     // Approved design: numerals shift to gold while a phase is
@@ -109,6 +112,8 @@ struct GuidedBrewView: View {
             }
         }
         .animation(.default, value: vm.currentStepIndex)
+        // Read the phase, time, and instruction as one VoiceOver announcement.
+        .accessibilityElement(children: .combine)
     }
 
     private var statusCaption: String {

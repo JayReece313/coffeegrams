@@ -69,6 +69,8 @@ struct CalculatorView: View {
                     Text("1:\(Int(vm.ratioRange.upperBound))")
                         .foregroundStyle(Color.cgTextSecondary)
                 }
+                .accessibilityLabel("Brew ratio")
+                .accessibilityValue(vm.ratioLabel)
             } header: {
                 sectionHeader("Ratio  \(vm.ratioLabel)")
             }
@@ -126,6 +128,10 @@ private struct ResultView: View {
     let grams: Double
     let label: String
 
+    /// Scales the big numeral with the user's Dynamic Type setting (relative to
+    /// Large Title) so it stays large but honours accessibility text sizes.
+    @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 64
+
     var body: some View {
         VStack(spacing: 6) {
             Text(label.uppercased())
@@ -133,7 +139,7 @@ private struct ResultView: View {
                 .foregroundStyle(Color.cgTextSecondary)
             (
                 Text(grams, format: .number.precision(.fractionLength(0)))
-                    .font(.system(size: 64, weight: .bold, design: .rounded))
+                    .font(.system(size: numberSize, weight: .bold, design: .rounded))
                 + Text(" g")
                     .font(.title2)
                     .foregroundStyle(Color.cgTextSecondary)
@@ -143,7 +149,7 @@ private struct ResultView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         // One combined element so VoiceOver reads "Water, 288 grams" not three
-        // separate fragments. (Full accessibility pass happens in M10.)
+        // separate fragments.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(label), \(Int(grams.rounded())) grams")
     }

@@ -108,6 +108,11 @@ private struct MethodRow: View {
         .padding(.vertical, 6)
         // Locked rows still read their normal colour; the lock chip conveys state
         // (plus the paywall on tap), so we don't rely on colour alone.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(locked ? "\(method.displayName), Pro, locked" : method.displayName)
+        .accessibilityHint(locked
+            ? "Unlock with CoffeeGrams Pro"
+            : "Opens the \(method.displayName) calculator")
     }
 
     private var subtitle: String {

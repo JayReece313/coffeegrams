@@ -35,6 +35,8 @@ struct CoffeeGramsApp: App {
             } catch {
                 fatalError("Failed to create the brew-log store: \(error)")
             }
+            // On-device crash/metrics capture (no network). Not during tests.
+            DiagnosticsService.shared.start()
         }
     }
 

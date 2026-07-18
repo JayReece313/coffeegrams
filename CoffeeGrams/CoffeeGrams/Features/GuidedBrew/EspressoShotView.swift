@@ -19,6 +19,9 @@ struct EspressoShotView: View {
     /// Drives the shot stopwatch; `tickOnce()` no-ops unless the shot is running.
     private let ticker = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
+    /// Scales the stopwatch with Dynamic Type.
+    @ScaledMetric(relativeTo: .largeTitle) private var timerSize: CGFloat = 96
+
     init(target: EspressoTarget) {
         _vm = State(initialValue: EspressoShotViewModel(target: target))
     }
@@ -35,7 +38,7 @@ struct EspressoShotView: View {
 
                 HStack(alignment: .lastTextBaseline, spacing: 2) {
                     Text("\(vm.elapsedSeconds)")
-                        .font(.system(size: 96, weight: .bold, design: .rounded))
+                        .font(.system(size: timerSize, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .contentTransition(.numericText())
                         .foregroundStyle(vm.hasStarted ? stateColor : Color.cgTextPrimary)
@@ -44,6 +47,8 @@ struct EspressoShotView: View {
                         .foregroundStyle(Color.cgTextSecondary)
                 }
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(stateCaption), \(vm.elapsedSeconds) seconds")
 
             Text("Target window \(vm.target.shotTimeRange.lowerBound)–\(vm.target.shotTimeRange.upperBound)s")
                 .font(.subheadline)
