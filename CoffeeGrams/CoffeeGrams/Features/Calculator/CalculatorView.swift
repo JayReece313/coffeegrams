@@ -16,6 +16,8 @@ struct CalculatorView: View {
     /// projection gives us two-way `Binding`s into the VM's properties (a
     /// Binding is a read/write handle SwiftUI controls use to edit state).
     @State private var vm: CalculatorViewModel
+    /// Drives navigation into the guided brew session.
+    @State private var startBrew = false
 
     init(method: BrewMethod) {
         _vm = State(initialValue: CalculatorViewModel(method: method))
@@ -71,11 +73,27 @@ struct CalculatorView: View {
                 sectionHeader("Ratio  \(vm.ratioLabel)")
             }
             .listRowBackground(Color.cgSurface)
+
+            Section {
+                Button { startBrew = true } label: {
+                    Text(BrewSessionView.startTitle(for: vm.method))
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.cgAccent)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+            }
         }
         .scrollContentBackground(.hidden)
         .background(Color.cgBackground.ignoresSafeArea())
         .navigationTitle(vm.method.displayName)
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $startBrew) {
+            BrewSessionView(method: vm.method, doseGrams: vm.doseGrams, ratio: vm.ratio)
+        }
     }
 
     /// A consistently styled section header in the muted secondary tone.
