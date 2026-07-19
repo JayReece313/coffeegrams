@@ -15,14 +15,21 @@ struct MethodPickerView: View {
 
     var body: some View {
         NavigationStack {
-            List(BrewMethod.allCases) { method in
-                row(for: method)
-                    .listRowBackground(Color.cgSurface)
+            VStack(alignment: .leading, spacing: 0) {
+                brandHeader
+                    .padding(.horizontal, 20)
+                    .padding(.top, 6)
+                    .padding(.bottom, 2)
+
+                List(BrewMethod.allCases) { method in
+                    row(for: method)
+                        .listRowBackground(Color.cgSurface)
+                }
+                .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
             }
-            .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
             .background(Color.cgBackground.ignoresSafeArea())
-            .navigationTitle("CoffeeGrams")
+            .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: BrewMethod.self) { method in
                 CalculatorView(method: method)
             }
@@ -50,6 +57,24 @@ struct MethodPickerView: View {
         .sheet(isPresented: $showPaywall) {
             PaywallView()
         }
+    }
+
+    /// The brand lockup: the balance-scale logo beside the wordmark, in
+    /// espresso. A custom header (not the nav title) so we control the colour —
+    /// the nav large title can't be recoloured reliably under iOS 26.
+    private var brandHeader: some View {
+        HStack(spacing: 12) {
+            Image("Logo")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 46, height: 46)
+            Text("CoffeeGrams")
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.cgTextPrimary)
+            Spacer()
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
     }
 
     /// A navigable row for accessible methods; a paywall-triggering button for
