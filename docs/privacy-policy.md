@@ -41,4 +41,4 @@ If this policy changes, we will update the date at the top of this page.
 
 ## Contact
 
-Questions about privacy? Contact us at **[replace with your support email]**.
+Questions about privacy? Contact us at info@jrlabapps.com
