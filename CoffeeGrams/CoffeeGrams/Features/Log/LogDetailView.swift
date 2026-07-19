@@ -17,6 +17,10 @@ struct LogDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
+    /// A local draft so notes persist once (when leaving the screen), not on
+    /// every keystroke.
+    @State private var notesDraft = ""
+
     var body: some View {
         Form {
             Section {
@@ -42,7 +46,7 @@ struct LogDetailView: View {
             .listRowBackground(Color.cgSurface)
 
             Section {
-                TextField("Tasting notes", text: notesBinding, axis: .vertical)
+                TextField("Tasting notes", text: $notesDraft, axis: .vertical)
                     .lineLimit(3...8)
                     .foregroundStyle(Color.cgTextPrimary)
             } header: {
@@ -52,8 +56,12 @@ struct LogDetailView: View {
 
             Section {
                 Button("Delete Brew", role: .destructive) {
-                    try? store.delete(id: record.id)
-                    dismiss()
+                    do {
+                        try store.delete(id: record.id)
+                        dismiss()
+                    } catch {
+                        // Keep the screen if deletion fails so the user can retry.
+                    }
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -63,6 +71,8 @@ struct LogDetailView: View {
         .background(Color.cgBackground.ignoresSafeArea())
         .navigationTitle(record.method.displayName)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear { notesDraft = record.notes ?? "" }
+        .onDisappear { saveNotes() }
     }
 
     // MARK: Persistence
@@ -78,14 +88,10 @@ struct LogDetailView: View {
         )
     }
 
-    private var notesBinding: Binding<String> {
-        Binding(
-            get: { record.notes ?? "" },
-            set: {
-                let trimmed = $0.trimmingCharacters(in: .whitespacesAndNewlines)
-                try? store.setNotes(trimmed.isEmpty ? nil : trimmed, forID: record.id)
-            }
-        )
+    /// Persist the notes draft once, trimmed, when leaving the screen.
+    private func saveNotes() {
+        let trimmed = notesDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        try? store.setNotes(trimmed.isEmpty ? nil : trimmed, forID: record.id)
     }
 
     // MARK: Row helpers
