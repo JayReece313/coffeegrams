@@ -16,6 +16,7 @@ struct LogDetailView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
 
     /// A local draft so notes persist once (when leaving the screen), not on
     /// every keystroke.
@@ -73,6 +74,11 @@ struct LogDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { notesDraft = record.notes ?? "" }
         .onDisappear { saveNotes() }
+        // Also persist when the app leaves the foreground, so notes survive
+        // backgrounding/termination while the screen is still open.
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { saveNotes() }
+        }
     }
 
     // MARK: Persistence
