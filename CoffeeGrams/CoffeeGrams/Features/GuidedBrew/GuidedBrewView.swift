@@ -202,6 +202,7 @@ struct GuidedBrewView: View {
             in: RoundedRectangle(cornerRadius: 14)
         )
         .foregroundStyle(role == .primary ? Color.white : Color.cgTextPrimary)
+        .accessibilityIdentifier(title)
     }
 
     private func saveToLog() {

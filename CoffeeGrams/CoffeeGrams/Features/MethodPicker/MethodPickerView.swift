@@ -85,12 +85,14 @@ struct MethodPickerView: View {
             NavigationLink(value: method) {
                 MethodRow(method: method, locked: false)
             }
+            .accessibilityIdentifier("method_\(method.rawValue)")
         } else {
             Button {
                 showPaywall = true
             } label: {
                 MethodRow(method: method, locked: true)
             }
+            .accessibilityIdentifier("method_\(method.rawValue)")
         }
     }
 }

@@ -109,6 +109,7 @@ struct CalculatorView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.cgAccent)
+                .accessibilityIdentifier("calculatorStartBrew")
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
             }
