@@ -80,15 +80,18 @@ In the **1.0 Prepare for Submission** page:
 - **Age Rating** — complete the questionnaire; all "None" → **4+**.
 - **Copyright:** `© 2026 JR Labs LLC`
 
-### Screenshot plan
-Required: at least one size — use **6.9"** (iPhone 16 Pro Max) and/or **6.7"**.
-Capture these five in the Simulator (or on device), status bar clean:
-1. **Home** — the branded list with the logo + PRO methods.
-2. **Calculator** — French Press with a nice result (e.g. 30 g → 450 g).
-3. **Guided timer** — mid-brew, the gold "RUNNING" countdown.
-4. **Paywall** — "CoffeeGrams Pro · Unlock Everything · $4.99".
-5. **Brew log** — a couple of rated brews.
-*(Marketing text overlays are optional; raw screenshots are fine for v1.)*
+### Screenshots — ✅ already generated
+Five 6.9" screenshots (1320 × 2868, iPhone 17 Pro Max, clean 9:41 status bar) are
+in **`Releases/screenshots/`** — just drag them into ASC in order (see that
+folder's README):
+1. `01-home.png` — branded list with logo + PRO methods
+2. `02-calculator.png` — French Press dose → water readout
+3. `03-guided-timer.png` — running "RUNNING" countdown
+4. `04-paywall.png` — "Unlock Everything · $4.99" (also use as the IAP review screenshot)
+5. `05-brew-log.png` — rated brews with notes
+
+Upload under the **6.9"** size. (Raw device frames, no marketing overlays — Apple
+accepts these.)
 
 ## 6. Upload, attach, submit **[you]**
 
