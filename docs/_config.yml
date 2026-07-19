@@ -1,0 +1,7 @@
+title: CoffeeGrams
+description: A precise, privacy-first coffee brewing companion for iOS.
+theme: jekyll-theme-cayman
+baseurl: "/coffeegrams"
+# README is developer-facing hosting notes, not a published page.
+exclude:
+  - README.md

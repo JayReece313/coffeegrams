@@ -1,3 +1,9 @@
+---
+layout: default
+title: Support
+permalink: /support/
+---
+
 # CoffeeGrams — Support
 
 Need help with CoffeeGrams? We're happy to help.
@@ -36,4 +42,4 @@ that turns green inside the 25–30s target window.
 ## Privacy
 
 CoffeeGrams collects no personal data. See our
-[Privacy Policy](./privacy-policy.md).
+[Privacy Policy]({{ '/privacy/' | relative_url }}).

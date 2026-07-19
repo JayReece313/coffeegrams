@@ -1,3 +1,9 @@
+---
+layout: default
+title: Privacy Policy
+permalink: /privacy/
+---
+
 # CoffeeGrams — Privacy Policy
 
 **Effective date:** July 18, 2026
