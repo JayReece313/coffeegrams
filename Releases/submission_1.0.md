@@ -28,8 +28,9 @@ non-consumable) · Category: **Food & Drink** · Age rating: **4+**
 - [ ] **Support email** — pick one you'll monitor, then replace
       `[replace with your support email]` in `docs/privacy-policy.md` and
       `docs/support.md`.
-- [ ] **Host the two docs** to get public URLs (see `docs/README.md` — GitHub
-      Pages is easiest). You need a **Privacy Policy URL** and a **Support URL**.
+- [x] **Docs hosted** (GitHub Pages, live):
+      - Privacy Policy: **https://jayreece313.github.io/coffeegrams/privacy/**
+      - Support: **https://jayreece313.github.io/coffeegrams/support/**
 
 ## 2. Xcode — signing & archive **[you]**
 
@@ -72,7 +73,8 @@ In the app → **Monetization → In-App Purchases → +**:
 In the **1.0 Prepare for Submission** page:
 
 - **Promotional Text / Description / Keywords** — paste from the bottom of this doc.
-- **Support URL / Privacy Policy URL** — your hosted docs from step 1.
+- **Privacy Policy URL** — `https://jayreece313.github.io/coffeegrams/privacy/`
+- **Support URL** — `https://jayreece313.github.io/coffeegrams/support/`
 - **Category:** Food & Drink (primary). Secondary optional (Lifestyle).
 - **Screenshots** — see the plan below.
 - **App Privacy** (Data → App Privacy):

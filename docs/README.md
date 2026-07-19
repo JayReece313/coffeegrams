@@ -1,26 +1,22 @@
-# CoffeeGrams — Public docs (Privacy Policy & Support)
+# docs/ — CoffeeGrams public site
 
-App Store Connect **requires** a Privacy Policy URL and a Support URL. These two
-Markdown pages provide that content; you just need to host them somewhere with a
-public URL.
+These pages are published via **GitHub Pages** (source: `main` branch, `/docs`
+folder, Cayman theme) and provide the App Store listing's two required URLs.
 
-- `privacy-policy.md` — required **Privacy Policy URL**
-- `support.md` — required **Support URL**
+**Live URLs**
+- Home: https://jayreece313.github.io/coffeegrams/
+- Privacy Policy: https://jayreece313.github.io/coffeegrams/privacy/
+- Support: https://jayreece313.github.io/coffeegrams/support/
 
-## Before hosting
+**Files**
+- `_config.yml` — Jekyll config (theme, `baseurl: /coffeegrams`, excludes this README).
+- `index.md` — landing page (`permalink: /`).
+- `privacy-policy.md` — `permalink: /privacy/`.
+- `support.md` — `permalink: /support/`.
 
-Replace **`[replace with your support email]`** in both files with a real
-address you'll monitor (a dedicated alias like `support@yourdomain` is nicer than
-a personal inbox, but any monitored email is accepted).
+**Editing:** change the markdown, commit, push to `main`; Pages rebuilds in
+~1–2 minutes.
 
-## Easiest way to host (free): GitHub Pages
-
-1. In the `coffeegrams` repo on GitHub: **Settings → Pages**.
-2. Set **Source** to the `main` branch and folder to `/docs` (or `/root`), Save.
-3. GitHub serves them at, e.g.,
-   `https://<user>.github.io/coffeegrams/privacy-policy` and `.../support`.
-   (GitHub renders `.md` as a page; or add a tiny `index.html` if you prefer.)
-
-Any static host works too (Netlify, Cloudflare Pages, a Notion public page, a
-Google Site, etc.) — paste in the same content and use those URLs in App Store
-Connect.
+**Optional — custom domain:** to serve these at `jrlabapps.com`, add a `CNAME`
+file here containing the domain and point DNS at GitHub Pages. Free; not required
+for submission.
