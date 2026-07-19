@@ -15,7 +15,7 @@
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.jrlabs.coffeegrams.pro",
+      "productID" : "com.jrlabapps.coffeegrams.pro",
       "referenceName" : "CoffeeGrams Pro",
       "type" : "NonConsumable"
     }

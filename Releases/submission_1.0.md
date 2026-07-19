@@ -4,7 +4,7 @@ Everything needed to submit v1.0. Follow the steps in order. Copy-paste metadata
 is at the bottom. Anything marked **[you]** happens in App Store Connect (ASC) or
 Xcode on your Mac; there's no code left to write.
 
-Bundle ID: `com.jrlabs.CoffeeGrams` · IAP: `com.jrlabs.coffeegrams.pro` ($4.99,
+Bundle ID: `com.jrlabapps.CoffeeGrams` · IAP: `com.jrlabapps.coffeegrams.pro` ($4.99,
 non-consumable) · Category: **Food & Drink** · Age rating: **4+**
 
 ---
@@ -47,10 +47,10 @@ non-consumable) · Category: **Food & Drink** · Age rating: **4+**
 
 ASC → **Apps → +** → **New App**:
 - Platform: **iOS**
-- Name: **CoffeeGrams** (must be unique on the store — if taken, try
-  "CoffeeGrams: Brew Calculator")
+- Name: **CoffeeGrams: Brew Calculator** ("CoffeeGrams" alone is taken — too
+  similar to an existing "Coffeegram" app. The home-screen name stays "CoffeeGrams".)
 - Primary language: **English (U.S.)**
-- Bundle ID: **com.jrlabs.CoffeeGrams**
+- Bundle ID: **com.jrlabapps.CoffeeGrams**
 - SKU: anything unique, e.g. `coffeegrams-1`
 - User access: Full
 
@@ -59,7 +59,7 @@ ASC → **Apps → +** → **New App**:
 In the app → **Monetization → In-App Purchases → +**:
 - Type: **Non-Consumable**
 - Reference Name: `CoffeeGrams Pro`
-- Product ID: **`com.jrlabs.coffeegrams.pro`** (must match exactly)
+- Product ID: **`com.jrlabapps.coffeegrams.pro`** (must match exactly)
 - Price: **$4.99** (Tier)
 - Localization (English): Display Name `CoffeeGrams Pro`, Description
   `Unlock all brewing methods and features — one-time purchase.`
@@ -112,13 +112,15 @@ accepts these.)
 
 **App Name (≤30):**
 ```
-CoffeeGrams
+CoffeeGrams: Brew Calculator
 ```
+*(28/30. Home-screen name remains "CoffeeGrams" — set by the app, not this field.)*
 
 **Subtitle (≤30):**
 ```
-Coffee brew calculator & timer
+Dial in every cup by the gram
 ```
+*(29/30. Alt if you'd rather have more search keywords here: "Ratios & guided brew timers".)*
 
 **Promotional Text (≤170):**
 ```
@@ -127,8 +129,10 @@ Dial in the perfect cup. Dose-and-ratio calculators and guided timers for V60, C
 
 **Keywords (≤100, comma-separated):**
 ```
-coffee,brew,pour over,v60,chemex,aeropress,french press,espresso,cold brew,ratio,timer,barista,scale,recipe
+coffee,pour over,v60,chemex,aeropress,french press,espresso,cold brew,ratio,timer,barista,scale
 ```
+*(95/100. Dropped "brew"/"calculator" — they're already in the app name, and Apple
+indexes name words automatically, so repeating them wastes keyword space.)*
 
 **Description:**
 ```
@@ -166,7 +170,7 @@ The first release of CoffeeGrams. Brew better coffee with precise calculators an
 ```
 No account or login is required.
 
-Free vs. paid: French Press is fully free (calculator, guided timer, and brew log). The other five methods (V60, Chemex, AeroPress, Cold Brew, Espresso) unlock together via a single one-time non-consumable in-app purchase, "CoffeeGrams Pro" (com.jrlabs.coffeegrams.pro, $4.99).
+Free vs. paid: French Press is fully free (calculator, guided timer, and brew log). The other five methods (V60, Chemex, AeroPress, Cold Brew, Espresso) unlock together via a single one-time non-consumable in-app purchase, "CoffeeGrams Pro" (com.jrlabapps.coffeegrams.pro, $4.99).
 
 To test the purchase: tap any method showing a "PRO" lock (e.g., V60) to open the paywall, then tap "Unlock Everything." "Restore Purchase" is available on the same screen.
 

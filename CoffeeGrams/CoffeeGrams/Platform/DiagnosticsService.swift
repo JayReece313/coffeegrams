@@ -15,7 +15,7 @@ import os
 final class DiagnosticsService: NSObject, MXMetricManagerSubscriber, @unchecked Sendable {
     static let shared = DiagnosticsService()
 
-    private let logger = Logger(subsystem: "com.jrlabs.coffeegrams", category: "diagnostics")
+    private let logger = Logger(subsystem: "com.jrlabapps.coffeegrams", category: "diagnostics")
 
     /// Register for MetricKit payloads. Safe to call once at launch.
     func start() {

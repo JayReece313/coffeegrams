@@ -12,7 +12,7 @@ import StoreKit
 
 /// The single non-consumable that unlocks everything beyond the free method.
 enum ProProduct {
-    static let id = "com.jrlabs.coffeegrams.pro"
+    static let id = "com.jrlabapps.coffeegrams.pro"
 }
 
 /// The result of attempting a purchase.
