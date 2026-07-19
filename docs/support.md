@@ -2,7 +2,7 @@
 
 Need help with CoffeeGrams? We're happy to help.
 
-**Contact:** [replace with your support email]
+**Contact:** info@jrlabapps.com
 
 We aim to reply within a few business days.
 
