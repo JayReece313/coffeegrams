@@ -83,7 +83,7 @@ In the **1.0 Prepare for Submission** page:
 - **Copyright:** `© 2026 JR Labs LLC`
 
 ### Screenshots — ✅ already generated
-Five 6.9" screenshots (1320 × 2868, iPhone 17 Pro Max, clean 9:41 status bar) are
+Five 6.9" screenshots (**1290 × 2796**, clean 9:41 status bar) are
 in **`Releases/screenshots/`** — just drag them into ASC in order (see that
 folder's README):
 1. `01-home.png` — branded list with logo + PRO methods

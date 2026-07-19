@@ -1,7 +1,9 @@
 # App Store screenshots — v1.0
 
-Ready to upload to App Store Connect. Captured on **iPhone 17 Pro Max**
-(**1320 × 2868**, the 6.9" display size ASC accepts) with a clean 9:41 status bar.
+Ready to upload to App Store Connect at **1290 × 2796** (the canonical 6.9"
+display size — iPhone 16 Pro Max) with a clean 9:41 status bar. (Captured at
+1320 × 2868 on iPhone 17 Pro Max, then fit to 1290 × 2796 since some ASC
+uploaders reject the newer 1320 × 2868.)
 
 | # | File | Screen |
 |---|------|--------|
