@@ -30,6 +30,30 @@ struct CalculatorView: View {
             }
             .listRowBackground(Color.cgSurface)
 
+            let presets = BrewPresets.presets(for: vm.method)
+            if !presets.isEmpty {
+                Section {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(presets) { preset in
+                                Button {
+                                    vm.applyPreset(doseGrams: preset.doseGrams, ratio: preset.ratio)
+                                } label: {
+                                    Text(preset.name)
+                                        .font(.subheadline.weight(.semibold))
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(.cgAccent)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                } header: {
+                    sectionHeader("Presets")
+                }
+                .listRowBackground(Color.cgSurface)
+            }
+
             Section {
                 Picker("Mode", selection: $vm.mode) {
                     ForEach(CalculatorViewModel.Mode.allCases) { mode in

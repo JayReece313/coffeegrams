@@ -31,6 +31,7 @@
 		4A2008B6300AAC0800E17B84 /* CoffeeGrams.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoffeeGrams.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A2008C3300AAC0900E17B84 /* CoffeeGramsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoffeeGramsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A2008CD300AAC0900E17B84 /* CoffeeGramsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoffeeGramsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A200948300C48D800E17B84 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -80,6 +81,7 @@
 		4A2008AD300AAC0800E17B84 = {
 			isa = PBXGroup;
 			children = (
+				4A200948300C48D800E17B84 /* Products.storekit */,
 				4A2008B8300AAC0800E17B84 /* CoffeeGrams */,
 				4A2008C6300AAC0900E17B84 /* CoffeeGramsTests */,
 				4A2008D0300AAC0900E17B84 /* CoffeeGramsUITests */,

@@ -79,5 +79,27 @@ extension AppTests {
         vm.selectMethod(.espresso)
         #expect(vm.ratioStep == 0.25)
     }
+
+    @Test("applying a preset sets dose + clamped ratio and goes dose-first")
+    func applyPreset() {
+        let vm = CalculatorViewModel(method: .aeropress)
+        vm.mode = .yieldFirst
+
+        vm.applyPreset(doseGrams: 11, ratio: 18)
+        #expect(vm.doseGrams == 11)
+        #expect(vm.ratio == 18)
+        #expect(vm.mode == .doseFirst)
+
+        // A preset ratio outside the method range is clamped (AeroPress 12–18).
+        vm.applyPreset(doseGrams: 15, ratio: 25)
+        #expect(vm.ratio == 18)
+    }
+
+    @Test("AeroPress offers presets; other methods offer none")
+    func presetsPerMethod() {
+        #expect(BrewPresets.presets(for: .aeropress).count == 2)
+        #expect(BrewPresets.presets(for: .v60).isEmpty)
+        #expect(BrewPresets.presets(for: .espresso).isEmpty)
+    }
   }
 }

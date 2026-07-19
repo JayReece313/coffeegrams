@@ -73,6 +73,15 @@ final class CalculatorViewModel {
         ratio = profile.defaultRatio
     }
 
+    /// Apply a named preset (e.g. an AeroPress recipe): set the dose and ratio
+    /// at once, clamping the ratio into the method's valid range, and go
+    /// dose-first so the result shows the water immediately.
+    func applyPreset(doseGrams: Double, ratio: Double) {
+        self.doseGrams = doseGrams
+        self.ratio = BrewCalculator.clampRatio(ratio, for: method)
+        self.mode = .doseFirst
+    }
+
     // MARK: - Derived configuration
 
     var profile: BrewMethodProfile { .profile(for: method) }
