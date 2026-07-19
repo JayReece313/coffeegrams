@@ -64,6 +64,30 @@ do iPad properly in 1.1.
   at the paywall, consider adding **V60** to the free tier (a one-line change in
   `BrewMethod.isFreeTier`).
 
+## Decided: NO ads (owner decision, 2026-07-19)
+
+**We will not put ads in CoffeeGrams.** This is a settled product decision, not a
+"maybe later" — recorded here so it isn't re-litigated.
+
+**Why:**
+- The brand is **premium + privacy-first**. The store description, privacy policy,
+  and privacy manifest ("Data Not Collected", no third-party SDKs, no tracking)
+  are a real differentiator. An ad SDK (e.g. AdMob) would falsify all three,
+  flip the App Privacy label to "Data Used to Track You", and require an ATT
+  prompt — making the listing *look worse*.
+- **Revenue wouldn't justify it.** Ads are a volume game (banner eCPM ~$0.20–$1);
+  a niche utility with a deliberately small free tier (French Press only) won't
+  generate meaningful ad income. A few $4.99 Pro purchases out-earn it without
+  degrading the experience.
+- **Bad fit for the model.** Pro already unlocks 5 of 6 methods; adding ads on
+  top of that thin free tier is double-dipping and invites 1-star reviews on the
+  very first release.
+
+**If revenue needs a lever later,** prefer (in order): free-tier tuning (add V60
+free — one line in `BrewMethod.isFreeTier`), price experiments, or a "tip jar"
+IAP — all keep the privacy story intact. Revisit only with real post-launch
+download/usage data, and never as part of a feature release.
+
 ## Execution checklist (when 1.1 starts)
 
 - [ ] Branch off `main` (e.g. `release/1.1-ipad`) so Qodo reviews the PR.
