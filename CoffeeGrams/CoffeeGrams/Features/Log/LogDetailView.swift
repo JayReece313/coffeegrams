@@ -52,8 +52,7 @@ struct LogDetailView: View {
 
             Section {
                 Button("Delete Brew", role: .destructive) {
-                    modelContext.delete(record)
-                    try? modelContext.save()
+                    try? store.delete(id: record.id)
                     dismiss()
                 }
                 .frame(maxWidth: .infinity)
@@ -66,16 +65,16 @@ struct LogDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    // MARK: Bindings that persist on change
+    // MARK: Persistence
+
+    /// Route writes through the store rather than persisting from the view.
+    private var store: BrewLogStore { BrewLogStore(context: modelContext) }
 
     /// 0 = unrated; stored as nil.
     private var ratingBinding: Binding<Int> {
         Binding(
             get: { record.rating ?? 0 },
-            set: {
-                record.rating = ($0 == 0) ? nil : $0
-                try? modelContext.save()
-            }
+            set: { try? store.setRating($0 == 0 ? nil : $0, forID: record.id) }
         )
     }
 
@@ -84,8 +83,7 @@ struct LogDetailView: View {
             get: { record.notes ?? "" },
             set: {
                 let trimmed = $0.trimmingCharacters(in: .whitespacesAndNewlines)
-                record.notes = trimmed.isEmpty ? nil : $0
-                try? modelContext.save()
+                try? store.setNotes(trimmed.isEmpty ? nil : trimmed, forID: record.id)
             }
         )
     }

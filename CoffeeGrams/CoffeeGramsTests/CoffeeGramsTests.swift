@@ -101,5 +101,13 @@ extension AppTests {
         #expect(BrewPresets.presets(for: .v60).isEmpty)
         #expect(BrewPresets.presets(for: .espresso).isEmpty)
     }
+
+    @Test("effective dose follows the mode (entered dose vs computed dose)")
+    func effectiveDose() {
+        let vm = CalculatorViewModel(method: .v60, doseGrams: 18, targetYieldGrams: 320)
+        #expect(vm.effectiveDoseGrams == 18)   // dose-first: the entered dose
+        vm.mode = .yieldFirst
+        #expect(vm.effectiveDoseGrams == 20)   // yield-first: 320 / 16 = 20
+    }
   }
 }

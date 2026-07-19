@@ -22,6 +22,12 @@ enum PurchaseOutcome: Equatable {
     case pending
 }
 
+/// Store-side failures distinct from a user cancel or a real StoreKit "pending".
+enum StoreKitError: Error {
+    /// The Pro product couldn't be loaded (bad id, no network, not configured).
+    case productUnavailable
+}
+
 /// Everything the app needs from the store. Main-actor isolated because it is
 /// only ever driven from the UI layer.
 @MainActor
@@ -62,7 +68,10 @@ struct StoreKitPurchaseProvider: PurchaseProviding {
     }
 
     func purchase() async throws -> PurchaseOutcome {
-        guard let product = await proProduct() else { return .pending }
+        // A missing product is a real failure (not a StoreKit "pending"), so we
+        // throw — the controller surfaces it as "not purchased" rather than
+        // silently swallowing it as a pending transaction.
+        guard let product = await proProduct() else { throw StoreKitError.productUnavailable }
         switch try await product.purchase() {
         case let .success(verification):
             if case let .verified(transaction) = verification {

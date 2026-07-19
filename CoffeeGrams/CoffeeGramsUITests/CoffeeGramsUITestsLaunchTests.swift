@@ -4,6 +4,10 @@
 //
 //  Created by supaa_jarvis on 7/17/26.
 //
+//  Uses XCTest (not Swift Testing): launch/UI automation relies on
+//  XCUIApplication from the XCTest framework, which has no Swift Testing
+//  equivalent. Unit tests elsewhere use Swift Testing.
+//
 
 import XCTest
 

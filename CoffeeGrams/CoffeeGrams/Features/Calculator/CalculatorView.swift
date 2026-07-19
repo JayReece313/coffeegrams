@@ -118,7 +118,7 @@ struct CalculatorView: View {
         .navigationTitle(vm.method.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $startBrew) {
-            BrewSessionView(method: vm.method, doseGrams: vm.doseGrams, ratio: vm.ratio)
+            BrewSessionView(method: vm.method, doseGrams: vm.effectiveDoseGrams, ratio: vm.ratio)
         }
     }
 

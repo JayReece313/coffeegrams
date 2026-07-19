@@ -119,6 +119,17 @@ final class CalculatorViewModel {
         }
     }
 
+    /// The coffee dose implied by the current inputs — the *entered* dose in
+    /// dose-first mode, or the *computed* dose in yield-first mode. This is what
+    /// a guided brew and the log should use, so a yield-first setup brews/logs
+    /// the right dose (not the untouched dose field).
+    var effectiveDoseGrams: Double {
+        switch mode {
+        case .doseFirst: doseGrams
+        case .yieldFirst: computedDoseGrams
+        }
+    }
+
     /// Label for `resultGrams`.
     var resultLabel: String {
         switch mode {

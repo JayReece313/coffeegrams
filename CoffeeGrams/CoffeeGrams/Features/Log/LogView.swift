@@ -43,10 +43,11 @@ struct LogView: View {
     }
 
     private func delete(_ offsets: IndexSet) {
+        // Route deletion through the store rather than persisting from the view.
+        let store = BrewLogStore(context: modelContext)
         for index in offsets {
-            modelContext.delete(records[index])
+            try? store.delete(id: records[index].id)
         }
-        try? modelContext.save()
     }
 }
 

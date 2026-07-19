@@ -4,6 +4,12 @@
 //
 //  Shown when a locked method is tapped. Presents the one-time Pro unlock.
 //
+//  Follows Apple's Human Interface Guidelines — In-App Purchase
+//  (https://developer.apple.com/design/human-interface-guidelines/in-app-purchase)
+//  and App Store Review Guideline 3.1.1 (In-App Purchase): the real StoreKit
+//  price is shown, "Restore Purchase" is clearly available, and there are no
+//  external/alternative purchase paths.
+//
 
 import SwiftUI
 
@@ -91,9 +97,7 @@ struct PaywallView: View {
                 if await purchases.purchase() { dismiss() }
             }
         } label: {
-            Text(purchases.isWorking
-                 ? "Please wait…"
-                 : "Unlock Everything · \(purchases.priceText ?? "$4.99")")
+            Text(buyTitle)
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
@@ -101,6 +105,15 @@ struct PaywallView: View {
         .background(Color.cgAccent, in: RoundedRectangle(cornerRadius: 16))
         .foregroundStyle(.white)
         .disabled(purchases.isWorking)
+    }
+
+    /// Never fabricate a price: show the real localized StoreKit price when it's
+    /// loaded, and just "Unlock Everything" until then (prices vary by storefront
+    /// and may not be $4.99).
+    private var buyTitle: String {
+        if purchases.isWorking { return "Please wait…" }
+        if let price = purchases.priceText { return "Unlock Everything · \(price)" }
+        return "Unlock Everything"
     }
 
     private var restoreButton: some View {
