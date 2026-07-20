@@ -4,6 +4,44 @@ A living roadmap for the next release. v1.0 shipped **iPhone-only, portrait**; t
 headline feature for 1.1 is **iPad support**. Add anything we decide for the next
 release here so it stays the single source of truth for what 1.1 needs.
 
+## Bug fixes & UX improvements (from 1.0 device testing)
+
+### 1. BUG — decimal keypad won't dismiss on the Calculator
+- **Symptom:** tapping the **Coffee dose** field raises the number pad, which
+  stays up (covering the Start Brew button) until you navigate away. Confirmed on
+  device + simulator.
+- **Cause:** the dose `TextField` in `CalculatorView.swift` uses
+  `.keyboardType(.decimalPad)`, which has **no Return/Done key**, and the screen
+  has no dismiss affordance (no focus toolbar, no tap-to-dismiss).
+- **Fix (1.1):** add keyboard dismissal — a `@FocusState` + a keyboard toolbar
+  **"Done"** button (`ToolbarItemGroup(placement: .keyboard)`), plus
+  `.scrollDismissesKeyboard(.interactively)` on the `Form` and/or tap-to-dismiss.
+  The toolbar "Done" is the standard, most discoverable fix for numeric keypads.
+  Applies anywhere we use `.decimalPad`/`.numberPad`.
+
+### 2. UX — duplicate "Start Brew" (Calculator → Timer)
+- **Symptom:** "Start Brew" on the calculator only *navigates* to the timer, which
+  shows a **second, identical "Start Brew"** to actually start the countdown — two
+  taps, confusing.
+- **Cause:** `CalculatorView.swift` sets `startBrew = true` (navigate only);
+  `GuidedBrewView` in its idle state shows its own "Start Brew" → `vm.start()`.
+- **Options considered (researched real brew-timer apps):**
+  - **A — Keep two steps, but relabel (RECOMMENDED).** Brew apps intentionally
+    start the clock on a deliberate press *after* you've prepared (grind, boil,
+    zero the scale) — auto-starting would mistime the first pour, which undercuts a
+    *precision* app. Keep the deliberate start, but rename the **calculator**
+    button to **"Set Up Brew"** (or "Continue"/"Prepare") and the **timer** button
+    to **"Start Timer"** → removes the duplicate-label confusion, keeps accurate
+    timing. Small, low-risk change.
+  - **B — Auto-start on navigation (owner's initial idea).** One tap, but the
+    countdown begins before you're physically ready → worse first-pour accuracy.
+    Not recommended as-is.
+  - **C — Auto-navigate + a "get ready" buffer.** Open the timer with a 3-2-1
+    "get ready" countdown or a big "tap anywhere to start," so it's one intent yet
+    still accurately timed. More work; a fallback if we want fewer taps than A.
+- **Recommendation:** **Option A** (relabel, keep the deliberate start). *Owner to
+  confirm A vs C when 1.1 is built.*
+
 ## Headline feature: iPad support
 
 **Why it was deferred from 1.0:** our UI was designed for iPhone portrait.
