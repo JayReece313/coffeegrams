@@ -37,6 +37,8 @@ For every user request involving code, structure your response as follows:
 # Project Workflow & Planning
 - **Plan first, then track.** Once a plan is agreed and we're ready to implement, create a **Kanban card for every milestone and deliverable** — not just code, but design, docs, testing, review, and submission steps.
 - Mark a card **in progress** when starting and **done** when complete (or move to the applicable column). The board is the single source of truth for progress — keep it current.
+- **Give every new card a one-line description** in its body summarizing what the task covers, so the board reads as a standalone record.
+- Maintain a shareable **GitHub Projects board** (under the repo owner) that mirrors the task list; when adding a card, set **both** its column **and** its description.
 - Roadmap/future work lives in the backlog (To Do) as its own cards.
 
 # Repository Standards
