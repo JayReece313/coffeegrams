@@ -33,3 +33,45 @@ For every user request involving code, structure your response as follows:
 2. **The SwiftUI/Swift Code:** Present clean, well-commented code blocks.
 3. **The Unit Test:** Provide a dedicated unit test snippet to verify the code logic.
 4. **App Store Connect Check:** Explicitly state any App Store review impacts (e.g., `Info.plist` privacy strings needed, accessibility requirements, or sandbox environment notes).
+
+# Project Workflow & Planning
+- **Plan first, then track.** Once a plan is agreed and we're ready to implement, create a **Kanban card for every milestone and deliverable** — not just code, but design, docs, testing, review, and submission steps.
+- Mark a card **in progress** when starting and **done** when complete (or move to the applicable column). The board is the single source of truth for progress — keep it current.
+- Roadmap/future work lives in the backlog (To Do) as its own cards.
+
+# Repository Standards
+- **Every iOS app gets its own git repo, set up the same way as CoffeeGrams** (our reference standard): private-or-public per decision, meaningful commit history, branch + PR for changes so review runs.
+- Each repo **must** include these docs, and they are **part of the plan from the start** (not afterthoughts):
+  - `README.md` — what the app is + how to build/run
+  - `ARCHITECTURE.md` — codebase map with Mermaid diagrams (layers, user flow, tests)
+  - `DESIGN.md` — palette, design rules (e.g. 60-30-10), brand direction
+  - `testing.md` — testing strategy + how to run each suite
+  - `Releases/submission_<version>.md` (when shipping) — the as-built App Store runbook + metadata
+
+# Architecture Standards
+- **Two layers:** a pure logic **Swift package** (models + business logic, no UI, testable from the CLI) under a thin **SwiftUI app**.
+- **Ports & Adapters:** every side effect (clock, storage, notifications, purchases, haptics, diagnostics) is a protocol with a live adapter + a test double.
+- **MVVM** with `@Observable @MainActor` ViewModels; Views render state only, no logic.
+- **No third-party SDKs by default** → keeps the App Privacy label at "Data Not Collected."
+
+# Testing Standards
+- **TDD-leaning:** every Model / ViewModel / Service ships with tests.
+- **Swift Testing** for unit + integration (pure package + app); **XCUITest** for system/regression flows.
+- The pure package must run from the **command line** (add a `test.sh` wrapper if needed).
+- All suites green **and** Debug/Release build warning-free before a milestone is "done."
+
+# Code Review Standards
+- Run a **Qodo review on the initial code push** to GitHub, and on **every push thereafter.**
+- Drive findings to **zero** (warnings-as-errors on Release) before merging or calling a milestone done.
+
+# App Store Submission Standards
+When an app is going to the App Store, the plan **must** include:
+- **Host the required web pages** — **Privacy Policy**, **Support**, and a **marketing/app URL** — published via **GitHub Pages** (needs a public repo) and, once a **domain** is registered, served from it.
+- **Identifiers from a domain you own** — bundle IDs *and* app names are globally unique; have a "Brand: Descriptor" name fallback.
+- **Signing prep before archiving:** register the App ID, register a device, create an Apple Distribution certificate; create the App Store Connect record **in the browser first**.
+- **Store assets:** screenshots **1290×2796** (app) / **1242×2688** (IAP review); App Privacy label; age rating; **DSA trader** declaration.
+- **Submit the app version + first IAP as one Review Submission**; choose **manual release**.
+- Follow the app's `Releases/submission_<version>.md` runbook.
+
+# Retrospective Standard
+- At the **end of every app we submit**, write a retrospective in the private **`Summary`** repo: `<AppName>_Summary.md` (original plan vs. what was added, problems faced + fixes, lessons/checklist for next time) **plus** a copy of the app's `ARCHITECTURE.md`.
