@@ -1,110 +1,179 @@
-# CoffeeGrams — v1.0 App Store Submission Runbook
+# CoffeeGrams — v1.0 App Store Submission Runbook (AS-BUILT)
 
-Everything needed to submit v1.0. Follow the steps in order. Copy-paste metadata
-is at the bottom. Anything marked **[you]** happens in App Store Connect (ASC) or
-Xcode on your Mac; there's no code left to write.
+Reflects the **actual** App Store Connect + Xcode flow used to submit v1.0 on
+**2026-07-19** (both the app version and the IAP went in together — "2 Items
+Submitted"). Copy-paste metadata is at the bottom.
 
-Bundle ID: `com.jrlabapps.CoffeeGrams` · IAP: `com.jrlabapps.coffeegrams.pro` ($4.99,
-non-consumable) · Category: **Food & Drink** · Age rating: **4+**
+> **Status:** SUBMITTED — awaiting App Review. Release is set to **Manual**, so
+> after approval it sits at "Pending Developer Release" until you click Release.
+
+Bundle ID: `com.jrlabapps.CoffeeGrams` · IAP: `com.jrlabapps.coffeegrams.pro`
+($4.99, non-consumable) · Category: **Food & Drink** · Age rating: **4+** ·
+iPhone-only, portrait.
+
+> ⚠️ **Key change from the "classic" flow:** the IAP is **no longer attached on
+> the version page**. App Store Connect now uses a **single Review Submission**
+> where you add the **app version AND the in-app purchase as two items**, then
+> submit them together. A *first* IAP must ride along with an app version. See §8.
 
 ---
 
 ## Order of operations
 
-1. Prerequisites (agreement, URLs, support email)
-2. Xcode: signing team + archive
-3. ASC: create the app record
-4. ASC: create the in-app purchase
-5. ASC: metadata + screenshots + privacy label + age rating
-6. Upload the build, attach it + the IAP, submit for review
+1. Prerequisites (Paid Apps agreement Active, hosted URLs, support email)
+2. Xcode signing (Apple ID, team, **register App ID**, **register a device**, distribution cert)
+3. Create the app **record in the browser first** (so Xcode uploads into it)
+4. Archive + upload the build (new "Distribute" = upload)
+5. Create the in-app purchase (mind the review-screenshot size)
+6. App-level required settings (Category, Price, App Privacy, Age Rating, DSA trader)
+7. Version page (metadata, screenshots, build, review notes, manual release)
+8. **Review Submission**: add app + IAP as 2 items → Submit
 
 ---
 
 ## 1. Prerequisites **[you]**
 
-- [ ] **Paid Applications Agreement** — ASC → **Business** → sign it, and enter
-      **banking + tax** info. *Until this is active, in-app purchases don't work
-      and the app can't be submitted with an IAP.*
-- [ ] **Support email** — pick one you'll monitor, then replace
-      `[replace with your support email]` in `docs/privacy-policy.md` and
-      `docs/support.md`.
+- [x] **Paid Applications Agreement** — ASC → **Business** → sign it + banking + tax.
+      Must show **Active** before the IAP can be submitted.
+- [x] **Support email** — `info@jrlabapps.com` (in the docs).
 - [x] **Docs hosted** (GitHub Pages, live):
       - Privacy Policy: **https://jayreece313.github.io/coffeegrams/privacy/**
       - Support: **https://jayreece313.github.io/coffeegrams/support/**
 
 ## 2. Xcode — signing & archive **[you]**
 
-1. Open `CoffeeGrams.xcodeproj`. Select the **CoffeeGrams** target →
-   **Signing & Capabilities** → check **Automatically manage signing** → choose
-   your **Team**.
-2. Set the run destination to **Any iOS Device (arm64)** (not a simulator).
-3. **Product → Archive.** When it finishes, the **Organizer** opens.
-4. Keep the Organizer open — you'll upload after the ASC record exists (step 6).
+Automatic signing needs several things set up on the developer portal first.
+Do these in order or Archive fails.
 
-*Version is already `1.0` (build `1`).*
+1. **Add your Apple ID to Xcode:** Xcode → **Settings ⌘, → Accounts → ➕ → Apple
+   ID** → sign in with the **JR Labs LLC account-holder** Apple ID. The team
+   **JR Labs LLC** then appears.
+2. **Select the team:** project → **CoffeeGrams** target → **Signing &
+   Capabilities** → *Automatically manage signing* ✔ → **Team = JR Labs LLC**.
+   Bundle ID must read **`com.jrlabapps.CoffeeGrams`**.
+3. **Register the App ID (identifier)** — automatic signing often fails to do
+   this. Do it manually: developer.apple.com/account → **Identifiers → ➕ → App
+   IDs → App → Explicit** → `com.jrlabapps.CoffeeGrams`. *(Bundle IDs are
+   globally unique across all of Apple; the original `com.jrlabs.*` was owned by
+   another developer — that's why we renamed to `com.jrlabapps.*`, matching the
+   jrlabapps.com domain.)*
+4. **Register a device** — automatic signing insists on creating a **Development**
+   provisioning profile, which requires **≥1 registered device**. With zero
+   devices, Archive dies instantly ("your team has no devices from which to
+   generate a provisioning profile"). Fix: **Window → Devices and Simulators**,
+   select your connected iPhone, copy its **Identifier (UDID)**, then
+   developer.apple.com → **Devices → ➕** → paste the UDID → Register.
+5. **Create the Apple Distribution certificate** — Settings → Accounts →
+   **Manage Certificates… → ➕ → Apple Distribution**.
+6. **Archive:** destination **Any iOS Device (arm64)** → **Product → Archive** →
+   the **Organizer** opens.
 
-## 3. App Store Connect — create the app **[you]**
+> The red "iOS App **Development** provisioning profile" error is only about
+> *running on a phone*. It does **not** block archiving once a device is
+> registered and a distribution cert exists — the archive uses a **Distribution**
+> profile (created automatically, needs no device).
 
-ASC → **Apps → +** → **New App**:
-- Platform: **iOS**
-- Name: **CoffeeGrams: Brew Calculator** ("CoffeeGrams" alone is taken — too
-  similar to an existing "Coffeegram" app. The home-screen name stays "CoffeeGrams".)
-- Primary language: **English (U.S.)**
-- Bundle ID: **com.jrlabapps.CoffeeGrams**
-- SKU: anything unique, e.g. `coffeegrams-1`
-- User access: Full
+## 3. Create the app record — in the browser, FIRST **[you]**
 
-## 4. App Store Connect — create the in-app purchase **[you]**
+Do this **before** uploading, so Xcode uploads *into* it (matched by bundle ID).
+Don't let Xcode create the record during archive — it defaults to the taken name
+"CoffeeGrams" and gets stuck asking for a company name.
 
-In the app → **Monetization → In-App Purchases → +**:
-- Type: **Non-Consumable**
-- Reference Name: `CoffeeGrams Pro`
-- Product ID: **`com.jrlabapps.coffeegrams.pro`** (must match exactly)
-- Price: **$4.99** (Tier)
-- Localization (English): Display Name `CoffeeGrams Pro`, Description
+ASC → **Apps → ➕ → New App**:
+- Platform **iOS** · Name **CoffeeGrams: Brew Calculator** *("CoffeeGrams" alone
+  is taken — too similar to an existing "Coffeegram" app; the home-screen name
+  still shows "CoffeeGrams")*
+- Primary language **English (U.S.)**
+- Bundle ID **com.jrlabapps.CoffeeGrams** *(only appears here once the App ID is
+  registered — see §2.3; refresh the page if it's blank)*
+- SKU `coffeegrams-1` · User Access **Full**
+
+## 4. Archive → upload the build **[you]**
+
+1. Organizer → select the archive → **Distribute App** → **App Store Connect**.
+2. Click **Distribute**. *(New Xcode merged the old "Upload"/"Export" steps —
+   **"Distribute" IS the upload**. The granular options now live under "Custom".)*
+   Let it auto-manage signing (creates the App Store distribution profile).
+3. Wait for **"Uploaded"**, then ~10–30 min of **"Processing"** in ASC before the
+   build is selectable on the version page.
+
+## 5. Create the in-app purchase **[you]**
+
+**Monetization → In-App Purchases → ➕:**
+- Type **Non-Consumable** · Reference Name `CoffeeGrams Pro`
+- Product ID **`com.jrlabapps.coffeegrams.pro`** (must match the app code exactly)
+- **Price:** USD **4.99**
+- **Localization (English):** Display Name `CoffeeGrams Pro`, Description
   `Unlock all brewing methods and features — one-time purchase.`
-- Add a review screenshot of the paywall (any 6.9"/6.7" paywall screenshot).
-- **Important:** you'll attach this IAP to the version in step 6 so it's reviewed
-  *with* the app. (A first IAP not submitted with a build stays "Waiting for
-  Review" forever.)
+- **Availability:** all countries/regions
+- **Review screenshot:** ⚠️ the IAP uploader **rejects 1320×2868** (and odd
+  sizes). Use **`Releases/screenshots/iap-review.png`** (**1242×2688**, 6.5").
+- Status should reach **"Ready to Submit."** *(It won't submit on its own — it
+  gets added to the app's Review Submission in §8.)*
 
-## 5. Metadata, screenshots, privacy, age rating **[you]**
+## 6. App-level required settings **[you]**
 
-In the **1.0 Prepare for Submission** page:
+These live on **separate left-sidebar pages** (not the version page). ASC blocks
+submission until all are set — this is where the "Unable to Add for Review"
+errors come from.
 
-- **Promotional Text / Description / Keywords** — paste from the bottom of this doc.
-- **Privacy Policy URL** — `https://jayreece313.github.io/coffeegrams/privacy/`
-- **Support URL** — `https://jayreece313.github.io/coffeegrams/support/`
-- **Category:** Food & Drink (primary). Secondary optional (Lifestyle).
-- **Screenshots** — see the plan below.
-- **App Privacy** (Data → App Privacy):
-  - "Do you collect data from this app?" → **No** → results in **Data Not Collected**.
-- **Age Rating** — complete the questionnaire; all "None" → **4+**.
-- **Copyright:** `© 2026 JR Labs LLC`
+- **App Information:**
+  - **Primary Category = Food & Drink** (secondary optional: Lifestyle)
+  - **Subtitle** = `Dial in every cup by the gram`
+  - **Content Rights** = **"does not contain third-party content"** (No — SF
+    Symbols/your own art don't count as third-party)
+- **Pricing and Availability:** **Price = Free** (the app is free; only the Pro
+  IAP costs money) · Availability = all countries
+- **App Privacy:**
+  - **Privacy Policy URL** = `https://jayreece313.github.io/coffeegrams/privacy/`
+  - Data question → **"No, we don't collect data"** → **PUBLISH** it (must click
+    Publish, or it stays flagged) → shows **"Data Not Collected"**
+- **Age Rating** → questionnaire all **None/No** (incl. new *In-App Controls*:
+  Parental Controls **No**, Age Assurance **No**) → **4+**
+- **App Store Regulations & Permits → Digital Services Act (DSA):** declare as a
+  **Trader** (you sell commercially via JR Labs LLC + a paid IAP) and provide
+  **public** business contact info (name / address / email / phone). *Declaring
+  "not a trader" removes the app from all EU storefronts.* Use a business /
+  registered-agent address, not a private home address.
 
-### Screenshots — ✅ already generated
-Five 6.9" screenshots (**1290 × 2796**, clean 9:41 status bar) are
-in **`Releases/screenshots/`** — just drag them into ASC in order (see that
-folder's README):
-1. `01-home.png` — branded list with logo + PRO methods
-2. `02-calculator.png` — French Press dose → water readout
-3. `03-guided-timer.png` — running "RUNNING" countdown
-4. `04-paywall.png` — "Unlock Everything · $4.99" (also use as the IAP review screenshot)
-5. `05-brew-log.png` — rated brews with notes
+## 7. Version page (1.0) **[you]**
 
-Upload under the **6.9"** size. (Raw device frames, no marketing overlays — Apple
-accepts these.)
+- **Description / Promotional Text / Keywords / Subtitle** — paste from below.
+- **Screenshots** — drag `Releases/screenshots/01`–`05` into the **6.9" Display**
+  slot. Use **1290×2796** (some uploaders reject the newer 1320×2868); 6.9"
+  auto-scales to smaller iPhones.
+- **Support URL** `…/support/` · **Marketing URL** optional (`…/coffeegrams/`)
+- **Copyright** `2026 JR Labs LLC` · **Routing file / iMessage screenshots** —
+  leave blank (N/A)
+- **Sign-In Information** — leave **"Sign-in required" unchecked** (no login)
+- **Build** — attach the processed build (§4) once it's out of "Processing"
+- **App Store Version Release** — **Manually release this version** (you press
+  Release after approval)
+- **Review Notes** — paste from below (explains free vs. paid + how to test the IAP)
 
-## 6. Upload, attach, submit **[you]**
+## 8. Review Submission — add app + IAP as TWO items **[you]**
 
-1. In Xcode **Organizer** → select the archive → **Distribute App** →
-   **App Store Connect** → **Upload**. Wait for "processing" to finish in ASC
-   (a few–30 min).
-2. In ASC 1.0 page → **Build** → select the uploaded build.
-3. **Add the in-app purchase to this version** (there's an "In-App Purchases"
-   section on the version page — include `CoffeeGrams Pro`).
-4. Paste the **Review Notes** (below).
-5. **Add for Review → Submit.**
+The IAP is added *here*, not on the version page:
+
+1. On the version, click **Add for Review**.
+2. In the **Review Submission**, make sure it includes **both**:
+   ☑️ CoffeeGrams (iOS) **1.0** and ☑️ **CoffeeGrams Pro** (in-app purchase).
+   *(Or click **Add for Review** on the IAP and include the version.)*
+3. **Submit for Review** → aim for **"2 Items Submitted."**
+
+**Recovery — if you accidentally submit the version alone ("1 Item"):** the IAP
+can't be added by itself ("add an app version for the selected platform"). Go to
+the **1.0 version → Remove from Review** (safe, no penalty, returns it to
+editable), then **Add for Review** again and include **both** items.
+
+> The IAP only becomes addable once the **Paid Apps Agreement is Active** and the
+> IAP is **Ready to Submit**.
+
+## After submitting
+
+Waiting for Review → In Review → **Pending Developer Release** (because release is
+Manual) → **click Release** to go live. If rejected, Apple explains in the
+**Resolution Center**; reply or fix + resubmit (no penalty).
 
 ---
 
@@ -181,7 +250,8 @@ The app makes no network calls and collects no data.
 
 ## Pre-flight reminders (from our audit)
 - Screenshots/description/price must match the app exactly.
-- The IAP must be submitted **with** this build (step 6.3).
-- Do a **real-device** pass before submitting (StoreKit sandbox, haptics, VoiceOver).
-- Export compliance is already handled in the app (`ITSAppUsesNonExemptEncryption = NO`).
+- The IAP must be submitted **with** the app version as one Review Submission (§8).
+- App-store screenshots **1290×2796**; IAP review screenshot **1242×2688**.
+- Do a **real-device** pass (StoreKit sandbox, haptics, VoiceOver) before releasing.
+- Export compliance is already handled (`ITSAppUsesNonExemptEncryption = NO`).
 - App is **iPhone-only, portrait** for v1 (iPad is planned for 1.1).
