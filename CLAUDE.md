@@ -77,3 +77,21 @@ When an app is going to the App Store, the plan **must** include:
 
 # Retrospective Standard
 - At the **end of every app we submit**, write a retrospective in the private **`Summary`** repo: `<AppName>_Summary.md` (original plan vs. what was added, problems faced + fixes, lessons/checklist for next time) **plus** a copy of the app's `ARCHITECTURE.md`.
+
+# Cost & Context Efficiency
+LLM context is re-sent every turn, so long, high-context sessions dominate cost
+(the CoffeeGrams build ran as one multi-day, all-Opus session ≈ $252; the habits
+below would have more than halved it).
+- **One session per task/milestone.** Start a fresh session for each milestone or
+  distinct task — don't run one giant multi-day session.
+- **Match the model to the job.** Use **Sonnet** for routine coding/edits/docs;
+  reserve **Opus** for hard problems (tricky bugs, architecture, ambiguous design).
+  Switch with `/model`.
+- **Compact and clear.** Run `/compact` mid-task to shrink context; `/clear` when
+  switching to a new task.
+- **Keep context lean.** Offload big searches to subagents (separate context, only
+  a summary returns); avoid dumping huge command outputs; be surgical with file
+  reads.
+- **Persist knowledge, not chatter.** Capture durable takeaways in memory files +
+  repo docs (README / ARCHITECTURE / retrospectives) so a new session reloads
+  knowledge cheaply instead of re-deriving it.
