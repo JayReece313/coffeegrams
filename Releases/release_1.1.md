@@ -39,8 +39,9 @@ release here so it stays the single source of truth for what 1.1 needs.
   - **C — Auto-navigate + a "get ready" buffer.** Open the timer with a 3-2-1
     "get ready" countdown or a big "tap anywhere to start," so it's one intent yet
     still accurately timed. More work; a fallback if we want fewer taps than A.
-- **Recommendation:** **Option A** (relabel, keep the deliberate start). *Owner to
-  confirm A vs C when 1.1 is built.*
+- **DECISION (owner):** ✅ **Option A** — relabel only: **"Set Up Brew"** on the
+  calculator and **"Start Timer"** on the timer screen; keep the deliberate
+  two-step start (accurate first-pour timing). **No auto-start.**
 
 ## Headline feature: iPad support
 
