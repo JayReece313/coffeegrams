@@ -43,7 +43,7 @@ release here so it stays the single source of truth for what 1.1 needs.
   calculator and **"Start Timer"** on the timer screen; keep the deliberate
   two-step start (accurate first-pour timing). **No auto-start.**
 
-### 3. TIMER — continuous elapsed clock + explicit Start/Stop + log actual time (candidate)
+### 3. TIMER — continuous elapsed clock + explicit Start/Stop + log actual time ✅ CONFIRMED
 - **What happens today:** each step is a **countdown**. Timed steps
   **auto-advance** at 0 (a slow pour gets left behind); manual steps (plunge,
   drawdown) **wait indefinitely**. There's a **Pause** button (+ Skip) but no
@@ -67,7 +67,12 @@ release here so it stays the single source of truth for what 1.1 needs.
   `GuidedBrewViewModel.swift` (master clock + toggle + Done), reconcile with
   `EspressoShotView`; `Models/BrewLogEntry.swift`, `Persistence/BrewLogRecord.swift`,
   `Features/Log/LogDetailView.swift` + `LogView.swift` (new actual-time field).
-- **Status:** candidate for 1.1 — owner to confirm whether to include.
+- **Status:** ✅ **CONFIRMED for 1.1** (owner approved the design 2026-07-20).
+- **⚠️ Manual test gate (this feature only):** the timer/clock + Start/Stop + Done
+  buttons must pass the **owner's manual test in the simulator** before moving on.
+  Build it → run in the simulator → owner tries the workflow and confirms they like
+  it → only then proceed to the next section. Do not consider this item done on
+  code/tests alone; it needs the owner's sign-off on the feel.
 
 ## Headline feature: iPad support
 
