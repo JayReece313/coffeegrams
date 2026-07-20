@@ -43,6 +43,32 @@ release here so it stays the single source of truth for what 1.1 needs.
   calculator and **"Start Timer"** on the timer screen; keep the deliberate
   two-step start (accurate first-pour timing). **No auto-start.**
 
+### 3. TIMER — continuous elapsed clock + explicit Start/Stop + log actual time (candidate)
+- **What happens today:** each step is a **countdown**. Timed steps
+  **auto-advance** at 0 (a slow pour gets left behind); manual steps (plunge,
+  drawdown) **wait indefinitely**. There's a **Pause** button (+ Skip) but no
+  continuous total clock and no clean way to *end* a brew mid-way.
+- **Research:** countdown is best for step guidance (keep it), but good brew
+  timers add a **count-up total-elapsed clock** too → do **both**, not either/or.
+- **Proposal (hybrid):**
+  - Add a **continuous count-up "total elapsed" master clock** (runs Start → Done)
+    alongside the per-step countdown — fixes "what if a brew runs longer."
+  - **Controls:** a **Start/Stop toggle** (one button: Start → Pause/Resume) **+ a
+    Done** button to finish the brew, side-by-side at the bottom (iOS convention;
+    the screen already uses two bottom buttons). Keep Skip as tertiary.
+  - **Design call:** when a timed step hits 0, keep **auto-advance** (current) or
+    switch to **soft targets** (count past the target, wait for the user's tap).
+    Leaning *soft targets* (more forgiving) — decide when building.
+  - **Log the actual finish time** — the engine already tracks `totalElapsed`, and
+    espresso already logs actual `shotSeconds`; extend that to all methods:
+    add an actual-time field to the log and show **planned vs actual**.
+- **Files:** `CoffeeGramsCore/.../Timer/BrewTimerEngine.swift` (already has
+  `totalElapsed`), `Features/GuidedBrew/GuidedBrewView.swift` +
+  `GuidedBrewViewModel.swift` (master clock + toggle + Done), reconcile with
+  `EspressoShotView`; `Models/BrewLogEntry.swift`, `Persistence/BrewLogRecord.swift`,
+  `Features/Log/LogDetailView.swift` + `LogView.swift` (new actual-time field).
+- **Status:** candidate for 1.1 — owner to confirm whether to include.
+
 ## Headline feature: iPad support
 
 **Why it was deferred from 1.0:** our UI was designed for iPhone portrait.
