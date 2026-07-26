@@ -77,6 +77,7 @@ When an app is going to the App Store, the plan **must** include:
 
 # Retrospective Standard
 - At the **end of every app we submit**, write a retrospective in the private **`Summary`** repo: `<AppName>_Summary.md` (original plan vs. what was added, problems faced + fixes, lessons/checklist for next time) **plus** a copy of the app's `ARCHITECTURE.md`.
+- **Process review — where could AI agents help?** As part of each retrospective, deliberately review the end-to-end process (both **building** and **testing**) and ask where **AI agents** could improve it (e.g., agentic test generation, exploratory bug-finding, build/release automation). It's a **checkpoint, not a mandate** — no change required if none is warranted; the point is to reassess each time as tooling and the app's scale evolve. (For CoffeeGrams 1.0 we evaluated AI agents for testing and **declined** — the deterministic suite was already right-sized; edge-case tests can be written ad hoc without a standing agent.)
 
 # Cost & Context Efficiency
 LLM context is re-sent every turn, so long, high-context sessions dominate cost
