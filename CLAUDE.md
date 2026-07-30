@@ -85,9 +85,31 @@ LLM context is re-sent every turn, so long, high-context sessions dominate cost
 below would have more than halved it).
 - **One session per task/milestone.** Start a fresh session for each milestone or
   distinct task — don't run one giant multi-day session.
-- **Match the model to the job.** Use **Sonnet** for routine coding/edits/docs;
-  reserve **Opus** for hard problems (tricky bugs, architecture, ambiguous design).
-  Switch with `/model`.
+- **Match the model to the job.** Switch with `/model`.
+  **Rates below are as of 2026-07-30 — treat them as a snapshot, not a fact.
+  Verify current pricing before leaning on it. The *ratio* between tiers is the
+  durable part of this advice; the absolute numbers drift.**
+  Every price is written **input/output, per 1M tokens** — so "$3/$15" means $3
+  per million input tokens and $15 per million output tokens.
+  - **Default to Sonnet 5** — it reaches near-Opus quality on coding and agentic
+    work at roughly **60% of Opus's cost** ($3/$15 vs $5/$25 — 60% on input and
+    on output alike, so the ratio holds whichever dominates your usage). Feature
+    work, edits, tests, docs, refactors, and chores all belong here.
+    - ⏳ **Expires 2026-08-31 — delete this sub-bullet on or after that date:**
+      an introductory $2/$10 rate is running until then, making volume work
+      unusually cheap. Once it lapses, Sonnet 5 returns to $3/$15 and the ~60%
+      ratio above still stands, so nothing else in this section needs changing.
+  - **Switch to Opus 5 deliberately** for hard problems — tricky bugs,
+    architecture, ambiguous design, long autonomous runs. It is the strongest on
+    deep reasoning and long-horizon agentic work, so pay for it on purpose, not
+    by default.
+  - **Use Opus 5 for marketing and store copy too** — different reasoning: that
+    work is *low-volume*, so the cost is a rounding error and you should simply
+    buy the better prose voice. Economising on a 200-word "What's New" is false
+    thrift.
+  - **Skip Haiku 4.5** (200K context is tight for a multi-file iOS repo, and
+    switching costs more attention than it saves) and **Fable 5** (2× Opus, aimed
+    at harder reasoning than an iOS app needs).
 - **Compact and clear.** Run `/compact` mid-task to shrink context; `/clear` when
   switching to a new task.
 - **Keep context lean.** Offload big searches to subagents (separate context, only
