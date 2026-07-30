@@ -68,6 +68,11 @@ private struct LogRow: View {
                 Text(subtitle)
                     .font(.subheadline)
                     .foregroundStyle(Color.cgTextSecondary)
+                if let timing {
+                    Text(timing)
+                        .font(.caption)
+                        .foregroundStyle(Color.cgTextSecondary)
+                }
             }
 
             Spacer()
@@ -85,5 +90,20 @@ private struct LogRow: View {
         let ratio = Int(record.ratio.rounded())
         let when = record.date.formatted(date: .abbreviated, time: .shortened)
         return "\(dose)g → \(water)g · 1:\(ratio) · \(when)"
+    }
+
+    /// "4:45 actual · 4:15 planned" — only for brews saved with a timeline
+    /// (1.1 onwards). Pre-1.1 rows have no timing and simply omit the line.
+    ///
+    /// HIG — Lists and tables: keep secondary detail subordinate to the row's
+    /// primary content, so the timing rides as a caption-weight third line
+    /// rather than competing with the method name.
+    /// https://developer.apple.com/design/human-interface-guidelines/lists-and-tables
+    private var timing: String? {
+        guard let actual = record.actualSeconds else { return nil }
+        guard let planned = record.plannedSeconds else {
+            return "\(TimeFormat.mmss(actual)) actual"
+        }
+        return "\(TimeFormat.mmss(actual)) actual · \(TimeFormat.mmss(planned)) planned"
     }
 }

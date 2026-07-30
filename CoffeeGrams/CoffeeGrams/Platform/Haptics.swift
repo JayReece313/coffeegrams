@@ -15,6 +15,11 @@ import UIKit
 protocol HapticsPerforming {
     /// A light tap when the brew advances to a new step.
     func stepChange()
+    /// A sharper tap when a hands-on step reaches its target and starts
+    /// overrunning — the cue to finish the pour and tap next. Deliberately
+    /// distinct from `stepChange()`: nothing has advanced, you are being asked
+    /// to act.
+    func targetReached()
     /// A success buzz when the whole brew finishes.
     func finished()
 }
@@ -23,6 +28,11 @@ protocol HapticsPerforming {
 struct LiveHaptics: HapticsPerforming {
     func stepChange() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+    }
+
+    func targetReached() {
+        let generator = UIImpactFeedbackGenerator(style: .rigid)
         generator.impactOccurred()
     }
 
@@ -35,5 +45,6 @@ struct LiveHaptics: HapticsPerforming {
 /// No-op haptics for previews and unit tests (no device, no side effects).
 struct NoHaptics: HapticsPerforming {
     func stepChange() {}
+    func targetReached() {}
     func finished() {}
 }

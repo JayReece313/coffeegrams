@@ -85,7 +85,23 @@ struct GuidedBrewView: View {
                 .foregroundStyle(statusColor)
                 .tracking(1.5)
 
-            if vm.isAwaitingManualAdvance {
+            if let overrun = vm.overrunSeconds {
+                // The final step, counting up. The leading "+" is the
+                // non-colour cue that this is overrun, not time remaining.
+                //
+                // HIG — Color: "Avoid using color as the only way to
+                // distinguish between elements or convey information."
+                // Colour-blind users and anyone in bright sunlight get the
+                // same meaning from the "+" prefix and the caption above.
+                // https://developer.apple.com/design/human-interface-guidelines/color
+                Text("+\(TimeFormat.mmss(overrun))")
+                    .font(.system(size: timerSize, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+                    // Gold means the clock is live — so a paused count-up goes
+                    // neutral, exactly like the paused countdown below.
+                    .foregroundStyle(vm.isPaused ? Color.cgTextPrimary : Color.cgTimerActive)
+            } else if vm.isAwaitingManualAdvance {
                 Text("Your move")
                     .font(.system(size: 56, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.cgTextPrimary)
@@ -101,7 +117,7 @@ struct GuidedBrewView: View {
             }
 
             if let step = vm.currentStep, !vm.isFinished {
-                Text(step.instruction)
+                Text(vm.stepActionEndsBrew ? finalStepInstruction(for: step) : step.instruction)
                     .font(.headline)
                     .foregroundStyle(Color.cgTextSecondary)
                     .multilineTextAlignment(.center)
@@ -110,22 +126,69 @@ struct GuidedBrewView: View {
                     .font(.headline)
                     .foregroundStyle(Color.cgTextSecondary)
             }
+
+            totalElapsedReadout
         }
         .animation(.default, value: vm.currentStepIndex)
         // Read the phase, time, and instruction as one VoiceOver announcement.
         .accessibilityElement(children: .combine)
     }
 
+    /// The master count-up clock. Runs from Start until the brew ends, straight
+    /// through overruns and manual holds — the answer to "how long did this brew
+    /// actually take?", which the per-step countdown can never give.
+    ///
+    /// HIG — Accessibility: "Provide alternative text labels for images, icons
+    /// and elements." The digits are spelled out for VoiceOver via
+    /// `TimeFormat.spoken`, because "2:14" is read aloud as "two colon
+    /// fourteen" — useless mid-brew with wet hands.
+    /// https://developer.apple.com/design/human-interface-guidelines/accessibility
+    @ViewBuilder
+    private var totalElapsedReadout: some View {
+        if vm.hasStarted || vm.isFinished {
+            HStack(spacing: 6) {
+                Text("TOTAL")
+                    .font(.caption2.weight(.semibold))
+                    .tracking(1.2)
+                Text(TimeFormat.mmss(vm.totalElapsedSeconds))
+                    .font(.callout.weight(.semibold))
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+            }
+            .foregroundStyle(Color.cgTextSecondary)
+            .accessibilityLabel("Total elapsed \(TimeFormat.spoken(vm.totalElapsedSeconds))")
+        }
+    }
+
+    /// On the last step the instruction changes from "do this" to "tell me when
+    /// you're done" — the app is deliberately waiting rather than ending the
+    /// brew on your behalf.
+    private func finalStepInstruction(for step: BrewStep) -> String {
+        "\(step.instruction) — tap Done when you're finished"
+    }
+
+    /// The caption deliberately distinguishes the two count-up cases that the
+    /// colour treats alike. A *timed* final step really has passed a target, so
+    /// "OVER TARGET" is accurate. A manual one (plunge, drawdown) has no target
+    /// at all — it is simply being timed — so it keeps the actionable "TAP
+    /// DONE"; labelling a freshly-arrived `+0:00` as over target would be a
+    /// plain falsehood.
     private var statusCaption: String {
         if vm.isFinished { "DONE" }
         else if vm.isPaused { "PAUSED" }
+        else if vm.isOverrunning { "OVER TARGET" }
         else if vm.isAwaitingManualAdvance { "TAP DONE" }
         else if vm.isRunning { "RUNNING" }
         else { "READY" }
     }
 
+    /// Gold whenever the clock is live — counting down *or* up. Keyed off
+    /// `isShowingOverrun` rather than the `.overrunning` phase so the caption
+    /// can't end up grey beside a gold numeral on a manual final step, which
+    /// counts up without ever entering that phase.
     private var statusColor: Color {
-        vm.isRunning ? .cgTimerActive : .cgTextSecondary
+        guard !vm.isPaused else { return .cgTextSecondary }
+        return (vm.isRunning || vm.isShowingOverrun) ? .cgTimerActive : .cgTextSecondary
     }
 
     // MARK: Step list
@@ -169,17 +232,42 @@ struct GuidedBrewView: View {
                 }
             }
         } else if vm.isIdle {
-            brewButton("Start Brew") { vm.start() }
-        } else if vm.isAwaitingManualAdvance {
-            brewButton("Done") { vm.advanceStep() }
+            brewButton("Start Timer") { vm.start() }
         } else {
-            HStack(spacing: 12) {
-                if vm.isRunning {
-                    brewButton("Pause", role: .secondary) { vm.pause() }
-                } else {
-                    brewButton("Resume") { vm.resume() }
+            VStack(spacing: 12) {
+                // The step's own action, when it has one. Only the final step
+                // holds, so in practice this is "Done" — and because it ends
+                // the brew anyway, we drop "End Brew" beside it rather than
+                // offering two buttons for one outcome.
+                //
+                // HIG — Buttons: "Use a verb or verb phrase that describes the
+                // action" and give each button a distinct, unambiguous title.
+                // Two buttons reading "Done" on one screen (step vs whole brew)
+                // is precisely the ambiguity that rule exists to prevent.
+                // https://developer.apple.com/design/human-interface-guidelines/buttons
+                if let advanceTitle = vm.advanceTitle {
+                    brewButton(advanceTitle) { vm.resolveCurrentStep() }
                 }
-                brewButton("Skip", role: .secondary) { vm.advanceStep() }
+
+                HStack(spacing: 12) {
+                    brewButton(
+                        vm.isPaused ? "Resume" : "Pause",
+                        role: vm.isPaused ? .primary : .secondary
+                    ) { vm.togglePause() }
+
+                    if !vm.stepActionEndsBrew {
+                        brewButton("End Brew", role: .secondary) { vm.finish() }
+                    }
+                }
+
+                // Tertiary: leaving a timed step early while it is still
+                // counting down. Everything else advances on its own.
+                if vm.isRunning {
+                    Button("Skip step") { vm.advanceStep() }
+                        .font(.subheadline)
+                        .foregroundStyle(Color.cgTextSecondary)
+                        .accessibilityIdentifier("Skip step")
+                }
             }
         }
     }
@@ -210,7 +298,9 @@ struct GuidedBrewView: View {
             method: vm.timeline.method,
             doseGrams: doseGrams,
             waterGrams: vm.timeline.totalWaterGrams,
-            ratio: ratio
+            ratio: ratio,
+            plannedSeconds: vm.plannedSeconds,
+            actualSeconds: vm.actualSeconds
         )
         try? BrewLogStore(context: modelContext).add(entry)
         saved = true

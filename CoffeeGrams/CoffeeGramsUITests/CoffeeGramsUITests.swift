@@ -20,11 +20,18 @@
 
 import XCTest
 
+/// `@MainActor` on the whole class: `XCUIApplication` and every query on it are
+/// main-actor isolated, so isolating the test case matches where this code
+/// actually runs and keeps Swift 6 strict concurrency quiet.
+@MainActor
 final class CoffeeGramsUITests: XCTestCase {
 
     private var app: XCUIApplication!
 
-    override func setUpWithError() throws {
+    // The `async` overload rather than `setUpWithError()`: an async override can
+    // carry the class's main-actor isolation, so launching the app here needs no
+    // escape hatch. The throwing-but-synchronous overload is forced nonisolated.
+    override func setUp() async throws {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launch()
@@ -76,15 +83,18 @@ final class CoffeeGramsUITests: XCTestCase {
         XCTAssertTrue(calcStart.waitForExistence(timeout: 10))
         calcStart.tap()
 
-        // Begin the timer.
-        let start = app.buttons["Start Brew"]
+        // Begin the timer. (1.1: the calculator button "sets up" the brew, this
+        // one starts the clock — the labels must stay distinct.)
+        let start = app.buttons["Start Timer"]
         XCTAssertTrue(start.waitForExistence(timeout: 10))
         start.tap()
 
-        // Skip through the timed steps until the manual "Done" appears.
-        for _ in 0..<6 {
+        // Skip through the timed steps until the final step's "Done" appears.
+        // Steps advance on their own, but skipping gets us there in seconds
+        // rather than the full brew time. (1.1 renamed "Skip" to "Skip step".)
+        for _ in 0..<8 {
             if app.buttons["Done"].exists { break }
-            let skip = app.buttons["Skip"]
+            let skip = app.buttons["Skip step"]
             if skip.exists { skip.tap() } else { break }
         }
         let done = app.buttons["Done"]

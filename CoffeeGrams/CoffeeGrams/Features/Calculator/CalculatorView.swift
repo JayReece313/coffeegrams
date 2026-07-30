@@ -18,6 +18,10 @@ struct CalculatorView: View {
     @State private var vm: CalculatorViewModel
     /// Drives navigation into the guided brew session.
     @State private var startBrew = false
+    /// `@FocusState` is SwiftUI's handle on "which field has the keyboard".
+    /// Writing `false` into it resigns first responder — i.e. dismisses the pad.
+    /// We need it because `.decimalPad` has no Return key of its own.
+    @FocusState private var doseFieldFocused: Bool
 
     init(method: BrewMethod) {
         _vm = State(initialValue: CalculatorViewModel(method: method))
@@ -70,6 +74,7 @@ struct CalculatorView: View {
                 HStack {
                     TextField("Grams", value: inputBinding, format: .number)
                         .keyboardType(.decimalPad)
+                        .focused($doseFieldFocused)
                         .font(.title3)
                         .foregroundStyle(Color.cgTextPrimary)
                     Text("g").foregroundStyle(Color.cgTextSecondary)
@@ -115,6 +120,25 @@ struct CalculatorView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        // Dragging the form down also dismisses the pad — a second, gestural
+        // affordance alongside the explicit Done button below.
+        .scrollDismissesKeyboard(.interactively)
+        .toolbar {
+            // A keyboard-attached toolbar: iOS pins this bar above the number
+            // pad, giving the pad the "Done" key it otherwise lacks. The Spacer
+            // right-aligns it, which is where users expect Done to be.
+            //
+            // HIG — Onscreen keyboards: "If people need a way to dismiss the
+            // keyboard, provide a button that does so," which numeric keypads
+            // require because they have no Return key.
+            // https://developer.apple.com/design/human-interface-guidelines/onscreen-keyboards
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") { doseFieldFocused = false }
+                    .font(.headline)
+                    .accessibilityIdentifier("dismissKeypad")
+            }
+        }
         .background(Color.cgBackground.ignoresSafeArea())
         .navigationTitle(vm.method.displayName)
         .navigationBarTitleDisplayMode(.inline)
