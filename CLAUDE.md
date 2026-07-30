@@ -85,12 +85,17 @@ LLM context is re-sent every turn, so long, high-context sessions dominate cost
 below would have more than halved it).
 - **One session per task/milestone.** Start a fresh session for each milestone or
   distinct task — don't run one giant multi-day session.
-- **Match the model to the job.** Switch with `/model`. (Reviewed 2026-07-30.)
+- **Match the model to the job.** Switch with `/model`.
+  **Rates below are as of 2026-07-30 — treat them as a snapshot, not a fact.
+  Verify current pricing before leaning on it. The *ratio* between tiers is the
+  durable part of this advice; the absolute numbers drift.**
   - **Default to Sonnet 5** — it reaches near-Opus quality on coding and agentic
-    work at ~60% of Opus's cost ($3/$15 per 1M vs $5/$25). Feature work, edits,
-    tests, docs, refactors, and chores all belong here. *Note: an introductory
-    $2/$10 rate runs through 2026-08-31, making volume work unusually cheap
-    until then.*
+    work at roughly **60% of Opus's cost** ($3/$15 per 1M vs $5/$25). Feature
+    work, edits, tests, docs, refactors, and chores all belong here.
+    - ⏳ **Expires 2026-08-31 — delete this sub-bullet on or after that date:**
+      an introductory $2/$10 rate is running until then, making volume work
+      unusually cheap. Once it lapses, Sonnet 5 returns to $3/$15 and the ~60%
+      ratio above still stands, so nothing else in this section needs changing.
   - **Switch to Opus 5 deliberately** for hard problems — tricky bugs,
     architecture, ambiguous design, long autonomous runs. It is the strongest on
     deep reasoning and long-horizon agentic work, so pay for it on purpose, not
