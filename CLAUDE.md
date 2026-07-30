@@ -89,8 +89,11 @@ below would have more than halved it).
   **Rates below are as of 2026-07-30 — treat them as a snapshot, not a fact.
   Verify current pricing before leaning on it. The *ratio* between tiers is the
   durable part of this advice; the absolute numbers drift.**
+  Every price is written **input/output, per 1M tokens** — so "$3/$15" means $3
+  per million input tokens and $15 per million output tokens.
   - **Default to Sonnet 5** — it reaches near-Opus quality on coding and agentic
-    work at roughly **60% of Opus's cost** ($3/$15 per 1M vs $5/$25). Feature
+    work at roughly **60% of Opus's cost** ($3/$15 vs $5/$25 — 60% on input and
+    on output alike, so the ratio holds whichever dominates your usage). Feature
     work, edits, tests, docs, refactors, and chores all belong here.
     - ⏳ **Expires 2026-08-31 — delete this sub-bullet on or after that date:**
       an introductory $2/$10 rate is running until then, making volume work
