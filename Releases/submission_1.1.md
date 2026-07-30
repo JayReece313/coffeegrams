@@ -22,7 +22,7 @@ Three things in particular you do **not** need to touch:
 |---|---|
 | §5 of the 1.0 runbook (create the IAP) | `com.jrlabapps.coffeegrams.pro` already exists and is approved. A *first* IAP must ride along with a version; a subsequent update must not re-submit it. |
 | §6 (Category, Price, App Privacy, Age Rating, DSA trader) | App-level settings persist across versions. 1.1 adds no SDK, no tracking, and no new data collection, so **"Data Not Collected" still holds** — do not re-answer the privacy questionnaire. |
-| Screenshots | 1.1 is iPhone-only, so the existing 1290×2796 set still matches. See the caveat below. |
+| Screenshots — **most of them** | 1.1 is iPhone-only and portrait, so the existing 1290×2796 set still matches. **One exception: the guided-brew shot must be retaken — see §3.** |
 
 ---
 
@@ -30,7 +30,7 @@ Three things in particular you do **not** need to touch:
 
 1. Merge to `main` with Qodo clean, confirm the version numbers
 2. Archive + upload the build
-3. Version page (What's New, build, manual release)
+3. Version page (What's New, build, **new guided-brew screenshot**, manual release)
 4. Review Submission — **one item this time**, not two
 
 ---
@@ -75,10 +75,28 @@ Same as 1.0 §4 — signing, certificate, and App ID are all already in place.
 - [ ] **What's New in This Version** — copy from the block below. Required for an
       update; this is the one field 1.0 didn't have.
 - [ ] **Build** — select the build you just uploaded.
-- [ ] **Screenshots** — leave as-is unless the guided-brew shot now looks stale.
-      That screen's controls changed in 1.1 (the count-up readout, Pause/End Brew),
-      so **if the existing screenshot shows the old timer, retake just that one**
-      at 1290×2796. Misleading screenshots are a review-rejection risk.
+- [ ] ⚠️ **Screenshots — the guided-brew shot MUST be replaced. This is not
+      optional and not a judgement call.** 1.1 redesigned that screen, so the
+      one currently on the listing shows a UI the app no longer has:
+
+      | On the current screenshot (1.0) | In the shipped 1.1 build |
+      |---|---|
+      | No total-elapsed readout | A "TOTAL m:ss" count-up under the step timer |
+      | Countdown only | The final step counts **up** as `+m:ss` |
+      | Pause / Skip buttons | Pause/Resume ⇄ End Brew, with "Skip step" demoted to tertiary |
+
+      A listing screenshot that doesn't match the built app is a documented
+      rejection reason, and it's the one asset 1.1 genuinely invalidated.
+
+      **To capture it:** run 1.1 on a simulator whose screen is 1290×2796
+      (iPhone 16/17 Pro Max class), open **French Press** — the free method, so
+      no purchase needed — tap **Set Up Brew → Start Timer**, let it reach a
+      step that shows the new controls, then `⌘S` in Simulator (or
+      `xcrun simctl io booted screenshot brew.png`). Verify the result is
+      exactly 1290×2796 before uploading; ASC rejects off-size images.
+
+- [ ] **Remaining screenshots** — leave as-is. 1.1 stayed iPhone-only and
+      portrait, so the rest of the set is still accurate. Don't redo work.
 - [ ] **Description / keywords / promotional text** — unchanged from 1.0 unless
       you want to work the timer improvements into the description.
 - [ ] **Version Release** → **Manually release this version**.
@@ -131,6 +149,8 @@ Fixes and a better brew timer.
 
 ## Pre-flight reminders
 
+- **Retake the guided-brew screenshot.** The listing's current one shows the 1.0
+  timer, which 1.1 replaced. Easiest step to skip, and a rejection reason.
 - **Archive from `main` after the merge**, not from the release branch.
 - **Bump the build number** if you ever upload a second 1.1 build — ASC rejects duplicates.
 - **One item in the Review Submission**, not two.
