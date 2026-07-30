@@ -127,6 +127,11 @@ struct CalculatorView: View {
             // A keyboard-attached toolbar: iOS pins this bar above the number
             // pad, giving the pad the "Done" key it otherwise lacks. The Spacer
             // right-aligns it, which is where users expect Done to be.
+            //
+            // HIG — Onscreen keyboards: "If people need a way to dismiss the
+            // keyboard, provide a button that does so," which numeric keypads
+            // require because they have no Return key.
+            // https://developer.apple.com/design/human-interface-guidelines/onscreen-keyboards
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Done") { doseFieldFocused = false }

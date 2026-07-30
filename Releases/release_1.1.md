@@ -149,14 +149,19 @@ Unchanged from 1.0 and not up for revisit — see
 - [x] Fix 2 — de-duplicate the start buttons.
 - [x] Fix 3 — timer: master clock, final-step overrun, End Brew, planned vs actual.
 - [x] Owner manual simulator gate on the timer.
-- [x] All suites green (Core 48, app unit, XCUITest) + Debug/Release warning-free.
+- [x] All suites green (Core 49, app unit, XCUITest) + Debug/Release warning-free.
 - [x] Bump `MARKETING_VERSION` to 1.1 and `CURRENT_PROJECT_VERSION` to 2.
-- [ ] Push the branch, open the PR, drive Qodo findings to zero.
+- [x] Push the branch, open the PR ([#2](https://github.com/JayReece313/coffeegrams/pull/2)),
+      drive Qodo findings to zero — 4 findings, all addressed (2 real bugs in the
+      paused/overrun display, 2 compliance gaps).
+- [x] Write the versioned submission runbook, [`submission_1.1.md`](submission_1.1.md).
 - [ ] "What's New" copy for the listing. **No new screenshots needed** — 1.1 is
       iPhone-only and the existing 1290×2796 set still matches the UI, apart
       from the guided-brew screen's new controls. Retake that one if it reads
       as stale.
-- [ ] Merge → archive → TestFlight → submit (manual release).
+- [ ] Merge → archive → TestFlight → submit (manual release), following
+      [`submission_1.1.md`](submission_1.1.md) — a four-step update flow, not the
+      eight-step first-submission flow 1.0 needed.
 
 ## What's New (draft copy)
 

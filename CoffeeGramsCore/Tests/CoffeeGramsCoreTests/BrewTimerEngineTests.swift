@@ -238,12 +238,37 @@ struct BrewTimerEngineTests {
 
         engine.pause()
         engine.advance(by: 100) // ignored
-        #expect(engine.overrunInStep == nil) // not overrunning *right now*
+        // The reading freezes rather than disappearing: a nil here would send
+        // the view to the countdown, which reads "0:00" on a step with no
+        // duration left to count.
+        #expect(engine.overrunInStep == 5)
         engine.resume()
 
         #expect(engine.phase == .overrunning)
         #expect(engine.overrunInStep == 5)
         #expect(engine.currentStepIndex == 1)
+    }
+
+    @Test("a paused manual final step still reports its count-up")
+    func pausedManualFinalStepKeepsCountUp() {
+        let engine = BrewTimerEngine(timeline: v60())
+        engine.start()
+        engine.advance(by: 135) // through to the drawdown
+        engine.advance(by: 12)
+        #expect(engine.overrunInStep == 12)
+
+        engine.pause()
+        // Same trap as above, and worse here: a manual step has no duration at
+        // all, so losing this value leaves the view nothing but "0:00".
+        #expect(engine.overrunInStep == 12)
+        #expect(engine.remainingInStep == nil)
+
+        engine.advance(by: 100) // paused — clock frozen
+        #expect(engine.overrunInStep == 12)
+
+        engine.resume()
+        engine.advance(by: 3)
+        #expect(engine.overrunInStep == 15)
     }
 
     @Test("a manual hold can be paused, stopping the master clock")

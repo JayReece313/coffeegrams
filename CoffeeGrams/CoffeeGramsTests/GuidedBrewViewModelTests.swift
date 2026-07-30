@@ -190,6 +190,28 @@ extension AppTests {
         #expect(vm.currentStepIndex == 1)
     }
 
+    @Test("pausing the final step keeps its count-up on screen")
+    func pausedFinalStepKeepsReadout() {
+        let clock = FakeClock()
+        let vm = makeVM(clock: clock)
+        runToDrawdown(vm, clock: clock)
+
+        clock.advance(12)
+        vm.tickOnce()
+        #expect(vm.overrunSeconds == 12)
+
+        vm.pause()
+        // The bug this guards: if overrunSeconds goes nil here the view falls
+        // through to the countdown, and a manual step has no duration left to
+        // count — so the screen would read "0:00" mid-drawdown.
+        #expect(vm.overrunSeconds == 12)
+        #expect(vm.isShowingOverrun)
+
+        clock.advance(60) // paused — the clock is frozen
+        vm.tickOnce()
+        #expect(vm.overrunSeconds == 12)
+    }
+
     @Test("togglePause flips between pause and resume")
     func togglePauseFlips() {
         let clock = FakeClock()

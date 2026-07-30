@@ -110,6 +110,10 @@ struct LogDetailView: View {
 
     /// How far the brew ran over or under its plan, e.g. "+0:12 over plan".
     /// `nil` when we don't have both numbers, or when they match exactly.
+    ///
+    /// HIG — Color: the over/under distinction is carried by the words "over
+    /// plan" / "under plan" and the +/− sign, never by colour alone.
+    /// https://developer.apple.com/design/human-interface-guidelines/color
     private var deltaText: String? {
         guard let delta = record.entry.timeDeltaSeconds, delta != 0 else { return nil }
         let magnitude = TimeFormat.mmss(abs(delta))

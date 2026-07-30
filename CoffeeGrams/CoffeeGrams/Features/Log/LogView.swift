@@ -94,6 +94,11 @@ private struct LogRow: View {
 
     /// "4:45 actual · 4:15 planned" — only for brews saved with a timeline
     /// (1.1 onwards). Pre-1.1 rows have no timing and simply omit the line.
+    ///
+    /// HIG — Lists and tables: keep secondary detail subordinate to the row's
+    /// primary content, so the timing rides as a caption-weight third line
+    /// rather than competing with the method name.
+    /// https://developer.apple.com/design/human-interface-guidelines/lists-and-tables
     private var timing: String? {
         guard let actual = record.actualSeconds else { return nil }
         guard let planned = record.plannedSeconds else {

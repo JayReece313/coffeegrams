@@ -106,8 +106,14 @@ public final class BrewTimerEngine {
     ///
     /// `nil` on any step that isn't holding. A manual final step (plunge,
     /// drawdown) has no target time at all, so every second spent on it counts.
+    ///
+    /// While **paused** this reports against the phase the brew will resume
+    /// into, so the reading freezes rather than disappearing. Without that, the
+    /// view falls through to the countdown — and a manual step has no duration
+    /// to count down, so pausing on the drawdown would read a misleading
+    /// "0:00" instead of holding at "+0:12".
     public var overrunInStep: TimeInterval? {
-        switch phase {
+        switch effectivePhase {
         case .overrunning:
             guard let duration = currentStep?.duration else { return nil }
             return max(0, elapsedInStep - Double(duration))
@@ -116,6 +122,13 @@ public final class BrewTimerEngine {
         default:
             return nil
         }
+    }
+
+    /// The phase that describes what the brew *is doing*, seeing through a
+    /// pause to the phase it will resume into. Use this for anything the user
+    /// reads; use `phase` for anything that decides whether time advances.
+    private var effectivePhase: BrewTimerPhase {
+        phase == .paused ? (phaseBeforePause ?? .paused) : phase
     }
 
     /// True while a live brew is in progress in any form — running, overrunning

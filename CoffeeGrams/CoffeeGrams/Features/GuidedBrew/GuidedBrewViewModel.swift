@@ -88,6 +88,12 @@ final class GuidedBrewViewModel {
         isOnFinalStep && (isOverrunning || isAwaitingManualAdvance)
     }
 
+    /// True when the big numeral is showing a count-*up* rather than a
+    /// countdown. Broader than `isOverrunning`: a manual final step counts up
+    /// too, without ever entering `.overrunning`. Anything that styles the
+    /// readout must key off this, or the numeral and its caption disagree.
+    var isShowingOverrun: Bool { overrunSeconds != nil }
+
     var currentStep: BrewStep? {
         steps.indices.contains(currentStepIndex) ? steps[currentStepIndex] : nil
     }
