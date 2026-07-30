@@ -20,11 +20,18 @@
 
 import XCTest
 
+/// `@MainActor` on the whole class: `XCUIApplication` and every query on it are
+/// main-actor isolated, so isolating the test case matches where this code
+/// actually runs and keeps Swift 6 strict concurrency quiet.
+@MainActor
 final class CoffeeGramsUITests: XCTestCase {
 
     private var app: XCUIApplication!
 
-    override func setUpWithError() throws {
+    // The `async` overload rather than `setUpWithError()`: an async override can
+    // carry the class's main-actor isolation, so launching the app here needs no
+    // escape hatch. The throwing-but-synchronous overload is forced nonisolated.
+    override func setUp() async throws {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launch()
