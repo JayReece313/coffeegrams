@@ -85,9 +85,23 @@ LLM context is re-sent every turn, so long, high-context sessions dominate cost
 below would have more than halved it).
 - **One session per task/milestone.** Start a fresh session for each milestone or
   distinct task — don't run one giant multi-day session.
-- **Match the model to the job.** Use **Sonnet** for routine coding/edits/docs;
-  reserve **Opus** for hard problems (tricky bugs, architecture, ambiguous design).
-  Switch with `/model`.
+- **Match the model to the job.** Switch with `/model`. (Reviewed 2026-07-30.)
+  - **Default to Sonnet 5** — it reaches near-Opus quality on coding and agentic
+    work at ~60% of Opus's cost ($3/$15 per 1M vs $5/$25). Feature work, edits,
+    tests, docs, refactors, and chores all belong here. *Note: an introductory
+    $2/$10 rate runs through 2026-08-31, making volume work unusually cheap
+    until then.*
+  - **Switch to Opus 5 deliberately** for hard problems — tricky bugs,
+    architecture, ambiguous design, long autonomous runs. It is the strongest on
+    deep reasoning and long-horizon agentic work, so pay for it on purpose, not
+    by default.
+  - **Use Opus 5 for marketing and store copy too** — different reasoning: that
+    work is *low-volume*, so the cost is a rounding error and you should simply
+    buy the better prose voice. Economising on a 200-word "What's New" is false
+    thrift.
+  - **Skip Haiku 4.5** (200K context is tight for a multi-file iOS repo, and
+    switching costs more attention than it saves) and **Fable 5** (2× Opus, aimed
+    at harder reasoning than an iOS app needs).
 - **Compact and clear.** Run `/compact` mid-task to shrink context; `/clear` when
   switching to a new task.
 - **Keep context lean.** Offload big searches to subagents (separate context, only
