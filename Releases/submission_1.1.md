@@ -88,25 +88,37 @@ Same as 1.0 §4 — signing, certificate, and App ID are all already in place.
       A listing screenshot that doesn't match the built app is a documented
       rejection reason, and it's the one asset 1.1 genuinely invalidated.
 
-      **Capture size — note the two-step, same as 1.0.** The upload size is
-      **1290×2796** (canonical 6.9", iPhone 16 Pro Max), but **iPhone 17 Pro Max
-      captures at 1320×2868** and is the only Pro Max simulator installed. So
-      you capture at 1320×2868 and *fit down* to 1290×2796, exactly how the
-      existing set was made — which also keeps the new shot dimensionally
-      identical to the other four. Canonical sizing guidance lives in
-      [`screenshots/README.md`](screenshots/README.md); the file to replace is
-      `screenshots/03-guided-timer.png`.
+      **Capture size — expect a two-step, same as 1.0.** The upload size is
+      **1290×2796** (canonical 6.9"), but current Pro Max simulators capture
+      *larger* — iPhone 17 Pro Max gives 1320×2868 — and some ASC uploaders
+      reject the bigger file. So you capture natively and **fit down** to
+      1290×2796, exactly how the existing set was made, which also keeps the new
+      shot dimensionally identical to the other four. Canonical sizing guidance:
+      [`screenshots/README.md`](screenshots/README.md).
+
+      Run from the **repo root**. Per our standards the simulator is discovered,
+      never hardcoded — this picks the newest Pro Max the machine actually has:
 
       ```sh
-      # 1. Capture (any Pro Max sim; 17 Pro Max yields 1320×2868)
-      xcrun simctl io "iPhone 17 Pro Max" screenshot 03-guided-timer.png
+      SIM=$(xcrun simctl list devices available \
+              | grep -oE 'iPhone [0-9]+ Pro Max' | sort -V | tail -1)
+      SHOT=Releases/screenshots/03-guided-timer.png
+      echo "capturing on ${SIM:?no Pro Max simulator installed} → $SHOT"
 
-      # 2. Fit to the upload size — ASC uploaders may reject 1320×2868
-      sips -z 2796 1290 03-guided-timer.png
+      xcrun simctl boot "$SIM" 2>/dev/null; open -a Simulator   # if not already up
 
-      # 3. Verify before uploading
-      sips -g pixelWidth -g pixelHeight 03-guided-timer.png   # expect 1290 × 2796
+      # 1. Capture at the device's native size, straight over the tracked file
+      xcrun simctl io "$SIM" screenshot "$SHOT"
+
+      # 2. Fit to the upload size
+      sips -z 2796 1290 "$SHOT"
+
+      # 3. Verify before uploading — expect 1290 × 2796
+      sips -g pixelWidth -g pixelHeight "$SHOT"
       ```
+
+      Writing straight to `$SHOT` overwrites the tracked asset, so there's no
+      way to produce a correct image and still upload the stale one by mistake.
 
       **To reach the screen:** open **French Press** — the free method, so no
       purchase is needed — then **Set Up Brew → Start Timer** and let it run to
