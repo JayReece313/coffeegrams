@@ -107,10 +107,14 @@ Same as 1.0 §4 — signing, certificate, and App ID are all already in place.
       import json, re, sys
       best = None
       for runtime, devices in json.load(sys.stdin)["devices"].items():
+          rm = re.search(r"iOS-([\d-]+)", runtime)          # iOS runtimes only
+          if not rm:
+              continue
+          ver = tuple(int(n) for n in rm.group(1).split("-"))  # numeric, not string
           for dev in devices:
-              m = re.fullmatch(r"iPhone (\d+) Pro Max", dev["name"])
-              if m:
-                  key = (int(m.group(1)), runtime)
+              dm = re.fullmatch(r"iPhone (\d+) Pro Max", dev["name"])
+              if dm:
+                  key = (int(dm.group(1)), ver)
                   if best is None or key > best[0]:
                       best = (key, dev)
       print(best[1]["udid"] if best else "", end="")')
