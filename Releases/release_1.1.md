@@ -160,10 +160,13 @@ Unchanged from 1.0 and not up for revisit — see
       drive Qodo findings to zero — 4 findings, all addressed (2 real bugs in the
       paused/overrun display, 2 compliance gaps).
 - [x] Write the versioned submission runbook, [`submission_1.1.md`](submission_1.1.md).
-- [ ] "What's New" copy for the listing. **No new screenshots needed** — 1.1 is
-      iPhone-only and the existing 1290×2796 set still matches the UI, apart
-      from the guided-brew screen's new controls. Retake that one if it reads
-      as stale.
+- [ ] "What's New" copy for the listing.
+- [ ] **Retake `screenshots/03-guided-timer.png` — required, not optional.** 1.1
+      redesigned that screen, so the shot on the listing shows a UI the app no
+      longer has. The other four are unaffected (1.1 stayed iPhone-only and
+      portrait). [`submission_1.1.md`](submission_1.1.md) is the authoritative
+      source for the screenshot rule and the capture/resize steps — follow it
+      rather than this line if the two ever disagree.
 - [ ] Merge → archive → TestFlight → submit (manual release), following
       [`submission_1.1.md`](submission_1.1.md) — a four-step update flow, not the
       eight-step first-submission flow 1.0 needed.
