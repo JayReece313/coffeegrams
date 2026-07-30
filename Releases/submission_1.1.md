@@ -88,12 +88,30 @@ Same as 1.0 §4 — signing, certificate, and App ID are all already in place.
       A listing screenshot that doesn't match the built app is a documented
       rejection reason, and it's the one asset 1.1 genuinely invalidated.
 
-      **To capture it:** run 1.1 on a simulator whose screen is 1290×2796
-      (iPhone 16/17 Pro Max class), open **French Press** — the free method, so
-      no purchase needed — tap **Set Up Brew → Start Timer**, let it reach a
-      step that shows the new controls, then `⌘S` in Simulator (or
-      `xcrun simctl io booted screenshot brew.png`). Verify the result is
-      exactly 1290×2796 before uploading; ASC rejects off-size images.
+      **Capture size — note the two-step, same as 1.0.** The upload size is
+      **1290×2796** (canonical 6.9", iPhone 16 Pro Max), but **iPhone 17 Pro Max
+      captures at 1320×2868** and is the only Pro Max simulator installed. So
+      you capture at 1320×2868 and *fit down* to 1290×2796, exactly how the
+      existing set was made — which also keeps the new shot dimensionally
+      identical to the other four. Canonical sizing guidance lives in
+      [`screenshots/README.md`](screenshots/README.md); the file to replace is
+      `screenshots/03-guided-timer.png`.
+
+      ```sh
+      # 1. Capture (any Pro Max sim; 17 Pro Max yields 1320×2868)
+      xcrun simctl io "iPhone 17 Pro Max" screenshot 03-guided-timer.png
+
+      # 2. Fit to the upload size — ASC uploaders may reject 1320×2868
+      sips -z 2796 1290 03-guided-timer.png
+
+      # 3. Verify before uploading
+      sips -g pixelWidth -g pixelHeight 03-guided-timer.png   # expect 1290 × 2796
+      ```
+
+      **To reach the screen:** open **French Press** — the free method, so no
+      purchase is needed — then **Set Up Brew → Start Timer** and let it run to
+      a step showing the new controls. Match the framing of the current
+      `03-guided-timer.png` so the set stays visually consistent.
 
 - [ ] **Remaining screenshots** — leave as-is. 1.1 stayed iPhone-only and
       portrait, so the rest of the set is still accurate. Don't redo work.
