@@ -3,6 +3,11 @@
 **Scope: bug fixes + the timer overhaul. iPhone-only, portrait (unchanged from
 1.0).** `MARKETING_VERSION = 1.1`, build `2`.
 
+**Submission runbook: [`submission_1.1.md`](submission_1.1.md)** — the versioned
+App Store runbook for this release, alongside
+[`submission_1.0.md`](submission_1.0.md) for the previous one. This file is the
+*what and why*; the runbook is the *how to ship it*.
+
 **Scope decision (owner, 2026-07-29):** 1.1 ships the three fixes below **on
 their own**. iPad was originally pencilled in as the 1.1 headline feature, but
 the keypad bug is a live usability defect in the shipped app and holding the fix
