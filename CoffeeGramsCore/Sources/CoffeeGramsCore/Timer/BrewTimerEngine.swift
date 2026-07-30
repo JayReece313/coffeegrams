@@ -6,10 +6,10 @@ public enum BrewTimerPhase: Equatable, Sendable {
     case idle
     /// A fixed-duration step is counting down.
     case running
-    /// A **soft-target** step has reached its target and is now counting *up*
-    /// past it, waiting for the user to tap next. The brew has not stalled —
-    /// the master clock keeps running — the app simply refuses to guess that a
-    /// slow pour has finished. See `BrewStep.usesSoftTarget`.
+    /// The brew's **final** step has reached its target and is now counting
+    /// *up* past it, waiting for the user to finish. Intermediate steps flow
+    /// straight into the next one; only the last step holds, because there is
+    /// nothing to advance to and the brew is not over until you say so.
     case overrunning
     /// Temporarily paused by the user.
     case paused
@@ -25,8 +25,8 @@ public enum BrewTimerPhase: Equatable, Sendable {
 public enum BrewTimerEvent: Equatable, Sendable {
     case started
     case stepBegan(index: Int, step: BrewStep)
-    /// A soft-target step hit its target and is now overrunning. Worth a haptic:
-    /// it is the cue to finish pouring and tap next.
+    /// The final step hit its target and is now overrunning. Worth a haptic:
+    /// it is the cue that the brew has reached its planned time.
     case reachedTarget(index: Int, step: BrewStep)
     case stepCompleted(index: Int, step: BrewStep)
     case awaitingManualAdvance(index: Int, step: BrewStep)
@@ -95,11 +95,27 @@ public final class BrewTimerEngine {
         return max(0, Double(duration) - elapsedInStep)
     }
 
-    /// Seconds the current step has run **past** its target, or `nil` when it
-    /// is not overrunning. This is what the UI shows as `+0:07`.
+    /// True when the brew is on its last step — the only step that holds.
+    public var isOnFinalStep: Bool {
+        !steps.isEmpty && currentStepIndex == steps.count - 1
+    }
+
+    /// Seconds the **final** step has run past its target — what the UI shows
+    /// as `+0:07`, and, because every earlier step auto-advances exactly on
+    /// time, also precisely how far the whole brew is past its plan.
+    ///
+    /// `nil` on any step that isn't holding. A manual final step (plunge,
+    /// drawdown) has no target time at all, so every second spent on it counts.
     public var overrunInStep: TimeInterval? {
-        guard phase == .overrunning, let duration = currentStep?.duration else { return nil }
-        return max(0, elapsedInStep - Double(duration))
+        switch phase {
+        case .overrunning:
+            guard let duration = currentStep?.duration else { return nil }
+            return max(0, elapsedInStep - Double(duration))
+        case .awaitingManualAdvance where isOnFinalStep:
+            return elapsedInStep
+        default:
+            return nil
+        }
     }
 
     /// True while a live brew is in progress in any form — running, overrunning
@@ -250,11 +266,15 @@ public final class BrewTimerEngine {
         }
     }
 
-    /// Called the instant a timed step's duration is used up. A soft-target
-    /// step holds here and counts up; an unattended one moves on by itself.
+    /// Called the instant a timed step's duration is used up.
+    ///
+    /// Intermediate steps flow straight into the next one, exactly as in 1.0 —
+    /// a guided brew shouldn't need a tap between every pour. The **final**
+    /// step instead holds and counts up, because there is nothing to flow into
+    /// and ending the brew is the user's call, not the clock's.
     private func reachTargetOfCurrentStep() {
         guard let step = currentStep else { return }
-        if step.usesSoftTarget {
+        if isOnFinalStep {
             phase = .overrunning
             onEvent?(.reachedTarget(index: currentStepIndex, step: step))
         } else {

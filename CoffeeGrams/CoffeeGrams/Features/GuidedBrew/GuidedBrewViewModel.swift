@@ -26,9 +26,11 @@ final class GuidedBrewViewModel {
     private(set) var currentStepIndex: Int = 0
     private(set) var remainingSeconds: Int = 0
     private(set) var fractionComplete: Double = 0
-    /// Seconds the current hands-on step has run past its target (0 unless
-    /// overrunning) — displayed as "+0:07".
-    private(set) var overrunSeconds: Int = 0
+    /// Seconds the **final** step has run past its target, or `nil` when no
+    /// overrun is showing. Displayed as "+0:07".
+    private(set) var overrunSeconds: Int?
+    /// Whether the brew is on its last step — the only one that holds.
+    private(set) var isOnFinalStep: Bool = false
     /// The master count-up clock: total wall-clock seconds since Start.
     private(set) var totalElapsedSeconds: Int = 0
 
@@ -71,15 +73,19 @@ final class GuidedBrewViewModel {
     /// i.e. anything other than "not started" or "already done".
     var hasStarted: Bool { !isIdle && !isFinished }
 
-    /// The user's forward action on the current step, or `nil` when there is
-    /// nothing to advance. An overrunning hands-on step and a manual step both
-    /// resolve with the same tap, but they mean different things, so they get
-    /// different words: "Next" moves to the following pour; "Done" ends an
-    /// open-ended action like the plunge.
+    /// The user's action on a step that is holding, or `nil` when the brew is
+    /// flowing on its own. In practice only the final step holds, so this is
+    /// "Done" — the tap that ends the brew. "Next" remains for a hypothetical
+    /// mid-timeline manual step, which no current method has.
     var advanceTitle: String? {
-        if isOverrunning { return "Next" }
-        if isAwaitingManualAdvance { return "Done" }
-        return nil
+        guard isOverrunning || isAwaitingManualAdvance else { return nil }
+        return isOnFinalStep ? "Done" : "Next"
+    }
+
+    /// True when the step's own button already ends the brew, so offering a
+    /// separate "End Brew" alongside it would be two buttons for one outcome.
+    var stepActionEndsBrew: Bool {
+        isOnFinalStep && (isOverrunning || isAwaitingManualAdvance)
     }
 
     var currentStep: BrewStep? {
@@ -119,6 +125,12 @@ final class GuidedBrewViewModel {
     func finish() {
         engine.finish()
         syncFromEngine()
+    }
+
+    /// The action behind the step's own button. On the final step that means
+    /// ending the brew; anywhere else it just moves on to the next step.
+    func resolveCurrentStep() {
+        if stepActionEndsBrew { finish() } else { advanceStep() }
     }
 
     /// One button, two meanings: pause a live brew, resume a paused one.
@@ -182,7 +194,8 @@ final class GuidedBrewViewModel {
         fractionComplete = engine.fractionComplete
         // Round overrun and the master clock *down*: they count up, so flooring
         // means the display never claims more time than has actually passed.
-        overrunSeconds = Int((engine.overrunInStep ?? 0).rounded(.down))
+        overrunSeconds = engine.overrunInStep.map { Int($0.rounded(.down)) }
         totalElapsedSeconds = Int(engine.totalWallElapsed.rounded(.down))
+        isOnFinalStep = engine.isOnFinalStep
     }
 }

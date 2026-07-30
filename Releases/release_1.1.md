@@ -67,15 +67,21 @@ release here so it stays the single source of truth for what 1.1 needs.
   - **Design call:** when a timed step hits 0, keep **auto-advance** (current) or
     switch to **soft targets** (count past the target, wait for the user's tap).
     Leaning *soft targets* (more forgiving) — decide when building.
-    → **DECIDED (owner, 2026-07-29): soft targets on hands-on steps only.**
-    The split is *hands-on vs unattended*: **bloom / pour / stir** hold at their
-    target and count up (`+0:07`) until you tap **Next** — auto-advancing there
-    gives an actively wrong instruction, telling you to start Pour 2 before
-    you've finished Pour 1. **Steep / wait** still auto-advance: you may have
-    walked away, the clock *is* the instruction, and it's what fires the French
-    Press "plunge now" prompt before the brew over-extracts. Applying soft
-    targets to a 4:00 steep as well was rejected for exactly that reason.
-    Encoded as `BrewStep.usesSoftTarget`.
+    → **DECIDED (owner, 2026-07-29): the overrun counter applies to the brew's
+    LAST step only; every other step auto-advances exactly as in 1.0.**
+    A first pass put soft targets on all hands-on steps (bloom/pour/stir) and
+    was rejected on feel — it meant a tap between every pour, which is not what
+    a guided brew should ask for. The 1.0 flow, where each step simply flows
+    into the next, stands. What 1.0 lacked was any notion of *going over*, and
+    the place that matters is the end of the brew: the final step (the drawdown
+    or plunge) now holds and counts up `+0:07` until you tap **Done**.
+    Because every earlier step advances exactly on time, that count-up is
+    also, precisely, how far the whole brew is past its plan — which is what
+    feeds planned vs actual in the log.
+    **Trade-off accepted:** a slow Pour 1 still lets the app move on to Pour 2
+    without you. Fewer taps was judged the better default; "Skip step" remains
+    for leaving a step early.
+    Implemented as `BrewTimerEngine.isOnFinalStep` (no per-step-type flag).
   - **Log the actual finish time** — the engine already tracks `totalElapsed`, and
     espresso already logs actual `shotSeconds`; extend that to all methods:
     add an actual-time field to the log and show **planned vs actual**.
@@ -85,32 +91,33 @@ release here so it stays the single source of truth for what 1.1 needs.
   `EspressoShotView`; `Models/BrewLogEntry.swift`, `Persistence/BrewLogRecord.swift`,
   `Features/Log/LogDetailView.swift` + `LogView.swift` (new actual-time field).
 - **AS BUILT (2026-07-29):**
-  - **Core** — `BrewStep.usesSoftTarget`; new `BrewTimerPhase.overrunning` and
-    `BrewTimerEvent.reachedTarget`; `totalWallElapsed` master clock that runs
-    through overruns *and* manual holds and stops only when paused (kept
-    separate from `totalElapsed`, which still measures progress against the plan
-    so the progress bar can't exceed 100%); `overrunInStep`; pause/resume from
-    any live phase; and `finish()` to end a brew where it stands.
-  - **App** — a "TOTAL m:ss" count-up readout under the step countdown; the big
-    numeral shows `+0:07` in gold with an "OVER TARGET" caption while
-    overrunning (the `+` and the caption are the non-colour cues); controls are
-    now a contextual **Next**/**Done** primary, a **Pause/Resume** ⇄ **End Brew**
-    row, and "Skip step" as tertiary. A `targetReached()` haptic marks the
-    moment a pour hits its target.
-  - **Naming deviation from the plan:** the finish button is **"End Brew"**, not
-    "Done". On a manual step the step's own action is already "Done", and two
-    "Done" buttons side by side would have recreated the exact duplicate-label
-    bug that item 2 above fixes.
+  - **Core** — `BrewTimerEngine.isOnFinalStep`; new `BrewTimerPhase.overrunning`
+    and `BrewTimerEvent.reachedTarget`, both reached only on the last step;
+    `totalWallElapsed` master clock that runs through the final-step hold and
+    stops only when paused (kept separate from `totalElapsed`, which still
+    measures progress against the plan so the progress bar can't exceed 100%);
+    `overrunInStep` (for a *manual* final step, which has no target time, every
+    second counts); pause/resume from any live phase; and `finish()` to end a
+    brew where it stands.
+  - **App** — a "TOTAL m:ss" count-up readout under the step countdown; on the
+    final step the big numeral becomes `+0:07` in gold (the `+` and the caption
+    are the non-colour cues). Controls: **Done** on the final step, a
+    **Pause/Resume** ⇄ **End Brew** row elsewhere, and "Skip step" as tertiary
+    while a countdown runs. A `targetReached()` haptic marks the planned end.
+  - **One button per outcome on the last step:** Done already ends the brew
+    there, so "End Brew" is hidden beside it. "End Brew" is deliberately not
+    also called "Done" — two "Done" buttons would have recreated the exact
+    duplicate-label bug that item 2 above fixes.
   - **Log** — `plannedSeconds` + `actualSeconds` on `BrewLogEntry` and
     `BrewLogRecord` (both optional with nil defaults → lightweight SwiftData
     migration; pre-1.1 rows just omit the line). The log list shows
     "4:45 actual · 4:15 planned" and the detail screen adds Planned/Actual rows
     with a "+0:30 over plan" delta.
-  - **Tests** — Core suite extended to 47 passing tests (soft-target hold,
-    unattended auto-advance, master clock through holds and pauses, `finish()`);
-    app suite adds master-clock, planned-vs-actual and End Brew coverage; the
-    XCUITest brew→save→log flow was updated to the new controls and passes.
-    Debug + Release build warning-free.
+  - **Tests** — Core suite at 48 passing tests (intermediate auto-advance,
+    final-step hold for both timed and manual last steps, master clock through
+    holds and pauses, `finish()`); app suite adds master-clock,
+    planned-vs-actual and End Brew coverage; the XCUITest brew→save→log flow
+    passes. Debug + Release build warning-free.
 - **Status:** ✅ **CONFIRMED for 1.1** (owner approved the design 2026-07-20).
 - **⚠️ Manual test gate (this feature only):** the timer/clock + Start/Stop + Done
   buttons must pass the **owner's manual test in the simulator** before moving on.

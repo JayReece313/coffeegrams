@@ -82,18 +82,13 @@ final class CoffeeGramsUITests: XCTestCase {
         XCTAssertTrue(start.waitForExistence(timeout: 10))
         start.tap()
 
-        // Skip through the timed steps until the manual "Done" appears.
-        // 1.1: hands-on steps hold at their target and offer "Next"; a step
-        // still counting down offers the tertiary "Skip step". Either moves on.
+        // Skip through the timed steps until the final step's "Done" appears.
+        // Steps advance on their own, but skipping gets us there in seconds
+        // rather than the full brew time. (1.1 renamed "Skip" to "Skip step".)
         for _ in 0..<8 {
             if app.buttons["Done"].exists { break }
-            if app.buttons["Next"].exists {
-                app.buttons["Next"].tap()
-            } else if app.buttons["Skip step"].exists {
-                app.buttons["Skip step"].tap()
-            } else {
-                break
-            }
+            let skip = app.buttons["Skip step"]
+            if skip.exists { skip.tap() } else { break }
         }
         let done = app.buttons["Done"]
         if done.waitForExistence(timeout: 3) { done.tap() }

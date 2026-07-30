@@ -47,14 +47,15 @@ struct BrewTimerEngineTests {
         #expect(engine.totalElapsed == 0)
     }
 
-    /// Walk a v60 brew to its drawdown. Every timed step is hands-on, so each
-    /// one holds at its target and needs a tap — see `BrewStep.usesSoftTarget`.
-    private func runV60ToDrawdown(_ engine: BrewTimerEngine) {
-        engine.start()
-        for _ in 0..<3 { // bloom, pour 1, pour 2
-            engine.advance(by: 45)
-            engine.advanceStep()
-        }
+    /// A timeline whose **last** step is timed rather than manual, to exercise
+    /// the final-step hold on its own terms. (No shipping method ends this way
+    /// today — all four end on a plunge or drawdown.)
+    private func timedFinalStep() -> BrewTimeline {
+        BrewTimeline(
+            method: .v60,
+            steps: [.bloom(targetGrams: 40, duration: 45), .steep(duration: 60)],
+            totalWaterGrams: 288
+        )
     }
 
     // MARK: Stepping through fixed-duration steps
@@ -69,64 +70,88 @@ struct BrewTimerEngineTests {
         #expect(engine.currentStepIndex == 0)
     }
 
-    @Test("an unattended step auto-advances at its target")
-    func unattendedStepAutoAdvances() {
-        // French Press: bloom(soft) → fill(soft) → steep 240 (unattended) → plunge.
-        let engine = BrewTimerEngine(timeline: frenchPress())
-        let rec = Recorder(); rec.attach(to: engine)
-        engine.start()
-
-        engine.advance(by: 30); engine.advanceStep() // bloom, tapped
-        engine.advance(by: 15); engine.advanceStep() // fill pour, tapped
-        #expect(engine.currentStep == .steep(duration: 240))
-
-        engine.advance(by: 240) // the steep needs no tap — you may have walked away
-        #expect(engine.currentStep == .plunge)
-        #expect(engine.phase == .awaitingManualAdvance)
-        #expect(rec.events.contains(.stepCompleted(index: 2, step: .steep(duration: 240))))
-        // The steep never announces an overrun; it simply ends.
-        #expect(!rec.events.contains(.reachedTarget(index: 2, step: .steep(duration: 240))))
-    }
-
-    // MARK: Soft targets (hands-on steps)
-
-    @Test("a soft-target step holds at its target and counts up")
-    func softTargetHoldsAndCountsUp() {
+    @Test("intermediate steps flow into the next one with no tap")
+    func intermediateStepsAutoAdvance() {
         let engine = BrewTimerEngine(timeline: v60())
         let rec = Recorder(); rec.attach(to: engine)
         engine.start()
 
-        engine.advance(by: 45) // exactly reaches the bloom's target
-        #expect(engine.phase == .overrunning)
-        #expect(engine.currentStepIndex == 0) // did NOT move on by itself
-        #expect(engine.remainingInStep == 0)
-        #expect(engine.overrunInStep == 0)
-        #expect(rec.events.last == .reachedTarget(index: 0, step: v60().steps[0]))
-
-        engine.advance(by: 7) // a slow pour keeps going
-        #expect(engine.phase == .overrunning)
-        #expect(engine.overrunInStep == 7)
-        // Overrun is real time but not *plan* progress.
-        #expect(engine.totalElapsed == 45)
-        #expect(engine.totalWallElapsed == 52)
-
-        engine.advanceStep() // user finishes the pour and taps
-        #expect(engine.currentStepIndex == 1)
+        engine.advance(by: 45) // the bloom's full duration
+        #expect(engine.currentStepIndex == 1) // straight on to pour 1
+        #expect(engine.elapsedInStep == 0)
         #expect(engine.phase == .running)
-        #expect(engine.overrunInStep == nil)
+        #expect(rec.events.suffix(2) == [
+            .stepCompleted(index: 0, step: v60().steps[0]),
+            .stepBegan(index: 1, step: v60().steps[1]),
+        ])
+        // An intermediate step never announces an overrun; it simply ends.
+        #expect(!rec.events.contains(.reachedTarget(index: 0, step: v60().steps[0])))
+
+        engine.advance(by: 45)
+        #expect(engine.currentStepIndex == 2) // and on to pour 2
+        #expect(engine.phase == .running)
     }
 
-    @Test("a coarse tick halts at the first soft target rather than skipping ahead")
-    func coarseTickHaltsAtSoftTarget() {
+    @Test("a single coarse tick crosses every timed step and stops on the last")
+    func coarseTickReachesFinalStep() {
         let engine = BrewTimerEngine(timeline: v60())
         engine.start()
         engine.advance(by: 10_000) // way past every timed step
-        // The bloom holds it: only the bloom's 45s counts as plan progress,
-        // and the rest of the tick is overrun on that same step.
-        #expect(engine.phase == .overrunning)
-        #expect(engine.currentStepIndex == 0)
-        #expect(engine.totalElapsed == 45)
+        // bloom45 + pour45 + pour45 = 135 of plan, then the drawdown holds.
+        #expect(engine.totalElapsed == 135)
+        #expect(engine.phase == .awaitingManualAdvance)
+        #expect(engine.currentStep == .drawdown(untilDripsStop: true))
+        #expect(engine.isOnFinalStep)
+        // The leftover is still real time, spent on that final step — every
+        // second of it past the plan.
         #expect(engine.totalWallElapsed == 10_000)
+        #expect(engine.overrunInStep == engine.totalWallElapsed - engine.totalElapsed)
+    }
+
+    // MARK: The final step holds
+
+    @Test("a timed final step holds at its target and counts up")
+    func timedFinalStepHoldsAndCountsUp() {
+        let engine = BrewTimerEngine(timeline: timedFinalStep())
+        let rec = Recorder(); rec.attach(to: engine)
+        engine.start()
+
+        engine.advance(by: 45) // bloom auto-advances into the final steep
+        #expect(engine.currentStepIndex == 1)
+        #expect(engine.phase == .running)
+
+        engine.advance(by: 60) // the final step reaches its target
+        #expect(engine.phase == .overrunning)
+        #expect(engine.currentStepIndex == 1) // does NOT complete on its own
+        #expect(engine.remainingInStep == 0)
+        #expect(engine.overrunInStep == 0)
+        #expect(rec.events.last == .reachedTarget(index: 1, step: .steep(duration: 60)))
+
+        engine.advance(by: 7)
+        #expect(engine.overrunInStep == 7)
+        // Overrun is real time but not *plan* progress.
+        #expect(engine.totalElapsed == 105)
+        #expect(engine.totalWallElapsed == 112)
+
+        engine.advanceStep() // user ends the brew
+        #expect(engine.phase == .completed)
+        #expect(engine.overrunInStep == nil)
+    }
+
+    @Test("a manual final step counts every second as over-plan time")
+    func manualFinalStepCountsUp() {
+        let engine = BrewTimerEngine(timeline: v60())
+        engine.start()
+        engine.advance(by: 135) // straight through to the drawdown
+        #expect(engine.phase == .awaitingManualAdvance)
+        #expect(engine.overrunInStep == 0) // just arrived, nothing over yet
+
+        engine.advance(by: 12)
+        // A manual step has no target, so all 12s are past the plan — and
+        // because everything before it ran exactly to time, this is also
+        // precisely how far the whole brew is over.
+        #expect(engine.overrunInStep == 12)
+        #expect(engine.totalWallElapsed - engine.totalElapsed == 12)
     }
 
     // MARK: Manual steps
@@ -135,7 +160,8 @@ struct BrewTimerEngineTests {
     func manualStepHolds() {
         let engine = BrewTimerEngine(timeline: v60())
         let rec = Recorder(); rec.attach(to: engine)
-        runV60ToDrawdown(engine)
+        engine.start()
+        engine.advance(by: 135) // bloom + pour 1 + pour 2, no taps needed
 
         #expect(engine.phase == .awaitingManualAdvance)
         #expect(engine.currentStep == .drawdown(untilDripsStop: true))
@@ -171,9 +197,7 @@ struct BrewTimerEngineTests {
         let rec = Recorder(); rec.attach(to: engine)
         engine.start()
 
-        engine.advance(by: 30); engine.advanceStep()  // bloom (hands-on)
-        engine.advance(by: 15); engine.advanceStep()  // fill pour (hands-on)
-        engine.advance(by: 240)                       // steep (unattended)
+        engine.advance(by: 285) // bloom30 + fill15 + steep240, all automatic
         #expect(engine.currentStep == .plunge)
         #expect(engine.phase == .awaitingManualAdvance)
         #expect(engine.totalElapsed == 285)
@@ -199,16 +223,17 @@ struct BrewTimerEngineTests {
         #expect(engine.totalWallElapsed == 20) // the master clock stops too
 
         engine.resume()
-        engine.advance(by: 25) // reaches the 45s bloom target
-        #expect(engine.phase == .overrunning)
+        engine.advance(by: 25) // finishes the 45s bloom
+        #expect(engine.currentStepIndex == 1)
+        #expect(engine.phase == .running)
         #expect(engine.totalWallElapsed == 45)
     }
 
     @Test("pausing an overrun resumes back into the overrun, not the next step")
     func pauseResumeFromOverrun() {
-        let engine = BrewTimerEngine(timeline: v60())
+        let engine = BrewTimerEngine(timeline: timedFinalStep())
         engine.start()
-        engine.advance(by: 50) // 45s bloom + 5s over
+        engine.advance(by: 110) // bloom45 + steep60 + 5s over on the final step
         #expect(engine.phase == .overrunning)
 
         engine.pause()
@@ -218,13 +243,14 @@ struct BrewTimerEngineTests {
 
         #expect(engine.phase == .overrunning)
         #expect(engine.overrunInStep == 5)
-        #expect(engine.currentStepIndex == 0)
+        #expect(engine.currentStepIndex == 1)
     }
 
     @Test("a manual hold can be paused, stopping the master clock")
     func pauseDuringManualHold() {
         let engine = BrewTimerEngine(timeline: v60())
-        runV60ToDrawdown(engine)
+        engine.start()
+        engine.advance(by: 135)
         #expect(engine.phase == .awaitingManualAdvance)
 
         engine.pause()
@@ -289,22 +315,21 @@ struct BrewTimerEngineTests {
         #expect(engine.phase == .running)
     }
 
-    // MARK: Step classification
+    // MARK: Final-step detection
 
-    @Test("hands-on steps use soft targets; unattended waits do not")
-    func softTargetClassification() {
-        // Hands-on: you are at the scale and can run long.
-        #expect(BrewStep.bloom(targetGrams: 40, duration: 45).usesSoftTarget)
-        #expect(BrewStep.pour(pourNumber: 1, targetCumulativeGrams: 164, duration: 45).usesSoftTarget)
-        #expect(BrewStep.stir(duration: 10).usesSoftTarget)
+    @Test("only the timeline's last step counts as final")
+    func finalStepDetection() {
+        let engine = BrewTimerEngine(timeline: v60()) // 4 steps
+        engine.start()
+        #expect(!engine.isOnFinalStep)
 
-        // Unattended: the clock is the instruction and you may have walked away.
-        #expect(!BrewStep.steep(duration: 240).usesSoftTarget)
-        #expect(!BrewStep.wait(duration: 30).usesSoftTarget)
+        engine.advance(by: 90) // through bloom and pour 1
+        #expect(engine.currentStepIndex == 2)
+        #expect(!engine.isOnFinalStep)
 
-        // Already user-advanced — there is no target to overrun.
-        #expect(!BrewStep.plunge.usesSoftTarget)
-        #expect(!BrewStep.drawdown(untilDripsStop: true).usesSoftTarget)
+        engine.advance(by: 45) // on to the drawdown
+        #expect(engine.currentStepIndex == 3)
+        #expect(engine.isOnFinalStep)
     }
 
     // MARK: Progress + edge cases

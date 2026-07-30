@@ -41,20 +41,12 @@ extension AppTests {
         #expect(vm.remainingSeconds == 45)
     }
 
-    /// Every v60 timed step is hands-on, so each holds at its target and needs
-    /// a tap. Walks the brew to the drawdown, taking `overrunPerStep` extra
-    /// seconds on each one.
-    private func runToDrawdown(
-        _ vm: GuidedBrewViewModel,
-        clock: FakeClock,
-        overrunPerStep: TimeInterval = 0
-    ) {
+    /// Run the brew to its drawdown. Intermediate steps flow into each other
+    /// with no taps, exactly as in 1.0 — 135s covers bloom + pour 1 + pour 2.
+    private func runToDrawdown(_ vm: GuidedBrewViewModel, clock: FakeClock) {
         vm.start()
-        for _ in 0..<3 {
-            clock.advance(45 + overrunPerStep)
-            vm.tickOnce()
-            vm.advanceStep()
-        }
+        clock.advance(135)
+        vm.tickOnce()
     }
 
     @Test("advancing the clock counts the step down")
@@ -69,61 +61,62 @@ extension AppTests {
         #expect(vm.currentStepIndex == 0)
     }
 
-    @Test("a hands-on step holds at its target and counts up until tapped")
-    func softTargetHolds() {
+    @Test("intermediate steps flow into the next one with no tap")
+    func intermediateStepsAutoAdvance() {
         let clock = FakeClock()
         let vm = makeVM(clock: clock)
         vm.start()
 
         clock.advance(45) // finishes the 45s bloom exactly
         vm.tickOnce()
-        #expect(vm.isOverrunning)
-        #expect(vm.currentStepIndex == 0) // did NOT move on by itself
-        #expect(vm.overrunSeconds == 0)
-        #expect(vm.advanceTitle == "Next")
-
-        clock.advance(7) // a slow pour keeps going
-        vm.tickOnce()
-        #expect(vm.overrunSeconds == 7)
-        #expect(vm.isOverrunning)
-
-        vm.advanceStep() // user taps Next
-        #expect(vm.currentStepIndex == 1) // now on pour 1
+        #expect(vm.currentStepIndex == 1) // straight on to pour 1
         #expect(vm.isRunning)
         #expect(vm.remainingSeconds == 45)
-        #expect(vm.advanceTitle == nil)
+        #expect(vm.overrunSeconds == nil) // no overrun on an intermediate step
+        #expect(vm.advanceTitle == nil)   // and nothing to tap
+
+        clock.advance(45)
+        vm.tickOnce()
+        #expect(vm.currentStepIndex == 2) // and on to pour 2
+        #expect(vm.isRunning)
     }
 
-    @Test("a manual step (drawdown) holds until Done, then completes the brew")
-    func manualStepThenComplete() {
+    @Test("the final step counts up and offers a single Done")
+    func finalStepCountsUp() {
         let clock = FakeClock()
         let vm = makeVM(clock: clock)
         runToDrawdown(vm, clock: clock)
+
         #expect(vm.isAwaitingManualAdvance)
+        #expect(vm.isOnFinalStep)
+        #expect(vm.overrunSeconds == 0) // just arrived
         #expect(vm.advanceTitle == "Done")
+        // Done already ends the brew, so no separate End Brew beside it.
+        #expect(vm.stepActionEndsBrew)
 
-        clock.advance(1000) // the plan does not move on a manual step…
+        clock.advance(12)
         vm.tickOnce()
+        #expect(vm.overrunSeconds == 12)
         #expect(vm.isAwaitingManualAdvance)
 
-        vm.advanceStep() // user taps Done
+        vm.resolveCurrentStep() // user taps Done
         #expect(vm.isFinished)
         #expect(vm.fractionComplete == 1)
+        #expect(vm.actualSeconds == 147) // 135 planned + 12 on the drawdown
     }
 
     // MARK: The master clock
 
-    @Test("the master clock counts wall time through overruns and manual holds")
+    @Test("the master clock keeps counting on the final step")
     func masterClockRunsThroughHolds() {
         let clock = FakeClock()
         let vm = makeVM(clock: clock)
-        // 5s over on each of the three pours.
-        runToDrawdown(vm, clock: clock, overrunPerStep: 5)
-        #expect(vm.totalElapsedSeconds == 150) // 135 planned + 15 overrun
+        runToDrawdown(vm, clock: clock)
+        #expect(vm.totalElapsedSeconds == 135)
 
-        clock.advance(20) // …and it keeps running while the bed drains
+        clock.advance(20) // it keeps running while the bed drains
         vm.tickOnce()
-        #expect(vm.totalElapsedSeconds == 170)
+        #expect(vm.totalElapsedSeconds == 155)
     }
 
     @Test("the master clock stops while paused")
@@ -147,27 +140,30 @@ extension AppTests {
         #expect(vm.totalElapsedSeconds == 30)
     }
 
-    @Test("planned vs actual: a brew run to time reports no delta")
+    @Test("planned vs actual: a brew ended on time reports no delta")
     func plannedMatchesActualOnTime() {
         let clock = FakeClock()
         let vm = makeVM(clock: clock)
         runToDrawdown(vm, clock: clock)
-        vm.advanceStep() // finish the drawdown immediately
+        vm.resolveCurrentStep() // finish the drawdown immediately
 
         #expect(vm.isFinished)
         #expect(vm.plannedSeconds == 135)
         #expect(vm.actualSeconds == 135)
     }
 
-    @Test("planned vs actual: slow pours show up as extra actual time")
-    func slowPoursExtendActual() {
+    @Test("planned vs actual: a long drawdown shows up as extra actual time")
+    func longFinalStepExtendsActual() {
         let clock = FakeClock()
         let vm = makeVM(clock: clock)
-        runToDrawdown(vm, clock: clock, overrunPerStep: 10)
-        vm.advanceStep()
+        runToDrawdown(vm, clock: clock)
+
+        clock.advance(30) // the bed takes a while to drain
+        vm.tickOnce()
+        vm.resolveCurrentStep()
 
         #expect(vm.plannedSeconds == 135)
-        #expect(vm.actualSeconds == 165) // 30s of overrun, honestly logged
+        #expect(vm.actualSeconds == 165) // 30s over, honestly logged
     }
 
     // MARK: Pause / resume
@@ -188,10 +184,10 @@ extension AppTests {
         #expect(vm.remainingSeconds == 25)
 
         vm.resume()
-        clock.advance(25) // reaches the bloom's target
+        clock.advance(25) // finishes the bloom
         vm.tickOnce()
-        #expect(vm.isOverrunning)
-        #expect(vm.currentStepIndex == 0)
+        #expect(vm.isRunning)
+        #expect(vm.currentStepIndex == 1)
     }
 
     @Test("togglePause flips between pause and resume")

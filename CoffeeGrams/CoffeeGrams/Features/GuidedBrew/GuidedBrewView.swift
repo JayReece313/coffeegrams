@@ -85,18 +85,18 @@ struct GuidedBrewView: View {
                 .foregroundStyle(statusColor)
                 .tracking(1.5)
 
-            if vm.isAwaitingManualAdvance {
-                Text("Your move")
-                    .font(.system(size: 56, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.cgTextPrimary)
-            } else if vm.isOverrunning {
-                // Past the target, counting up. The leading "+" is the
+            if let overrun = vm.overrunSeconds {
+                // The final step, counting up. The leading "+" is the
                 // non-colour cue that this is overrun, not time remaining.
-                Text("+\(TimeFormat.mmss(vm.overrunSeconds))")
+                Text("+\(TimeFormat.mmss(overrun))")
                     .font(.system(size: timerSize, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .contentTransition(.numericText())
                     .foregroundStyle(Color.cgTimerActive)
+            } else if vm.isAwaitingManualAdvance {
+                Text("Your move")
+                    .font(.system(size: 56, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.cgTextPrimary)
             } else {
                 Text(TimeFormat.mmss(vm.remainingSeconds))
                     .font(.system(size: timerSize, weight: .bold, design: .rounded))
@@ -109,7 +109,7 @@ struct GuidedBrewView: View {
             }
 
             if let step = vm.currentStep, !vm.isFinished {
-                Text(vm.isOverrunning ? overrunInstruction(for: step) : step.instruction)
+                Text(vm.stepActionEndsBrew ? finalStepInstruction(for: step) : step.instruction)
                     .font(.headline)
                     .foregroundStyle(Color.cgTextSecondary)
                     .multilineTextAlignment(.center)
@@ -146,10 +146,11 @@ struct GuidedBrewView: View {
         }
     }
 
-    /// While a hands-on step overruns, the instruction changes from "do this"
-    /// to "tell me when you're done" — the app is deliberately waiting.
-    private func overrunInstruction(for step: BrewStep) -> String {
-        "\(step.instruction) — tap Next when you're done"
+    /// On the last step the instruction changes from "do this" to "tell me when
+    /// you're done" — the app is deliberately waiting rather than ending the
+    /// brew on your behalf.
+    private func finalStepInstruction(for step: BrewStep) -> String {
+        "\(step.instruction) — tap Done when you're finished"
     }
 
     private var statusCaption: String {
@@ -209,28 +210,27 @@ struct GuidedBrewView: View {
             brewButton("Start Timer") { vm.start() }
         } else {
             VStack(spacing: 12) {
-                // The step's own action, when it has one: "Next" to close out an
-                // overrunning pour, "Done" to end a plunge. Given the primary
-                // slot because it is what the brew is waiting on.
+                // The step's own action, when it has one. Only the final step
+                // holds, so in practice this is "Done" — and because it ends
+                // the brew anyway, we drop "End Brew" beside it rather than
+                // offering two buttons for one outcome.
                 if let advanceTitle = vm.advanceTitle {
-                    brewButton(advanceTitle) { vm.advanceStep() }
+                    brewButton(advanceTitle) { vm.resolveCurrentStep() }
                 }
 
-                // Session controls. "End Brew" is deliberately not "Done": on a
-                // manual step both would be on screen at once, and they mean
-                // very different things (finish this step vs finish the brew).
                 HStack(spacing: 12) {
                     brewButton(
                         vm.isPaused ? "Resume" : "Pause",
                         role: vm.isPaused ? .primary : .secondary
                     ) { vm.togglePause() }
 
-                    brewButton("End Brew", role: .secondary) { vm.finish() }
+                    if !vm.stepActionEndsBrew {
+                        brewButton("End Brew", role: .secondary) { vm.finish() }
+                    }
                 }
 
-                // Tertiary: leaving a timed step early. Only meaningful while a
-                // countdown is actually running — once it is overrunning, the
-                // primary "Next" is the same action with a better name.
+                // Tertiary: leaving a timed step early while it is still
+                // counting down. Everything else advances on its own.
                 if vm.isRunning {
                     Button("Skip step") { vm.advanceStep() }
                         .font(.subheadline)
