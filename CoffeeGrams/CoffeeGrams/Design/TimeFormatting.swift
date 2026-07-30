@@ -20,4 +20,21 @@ enum TimeFormat {
         let seconds = clamped % 60
         return String(format: "%d:%02d", minutes, seconds)
     }
+
+    /// The same duration in words, for VoiceOver — "2:14" is read aloud as
+    /// "two colon fourteen", which is useless mid-brew. Whole minutes drop the
+    /// seconds ("4 minutes", not "4 minutes 0 seconds"), and under a minute
+    /// drops the minutes.
+    nonisolated static func spoken(_ totalSeconds: Int) -> String {
+        let clamped = max(0, totalSeconds)
+        let minutes = clamped / 60
+        let seconds = clamped % 60
+
+        let minutePart = "\(minutes) minute\(minutes == 1 ? "" : "s")"
+        let secondPart = "\(seconds) second\(seconds == 1 ? "" : "s")"
+
+        if minutes == 0 { return secondPart }
+        if seconds == 0 { return minutePart }
+        return "\(minutePart) \(secondPart)"
+    }
 }

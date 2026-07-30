@@ -32,6 +32,14 @@ final class BrewLogRecord {
     var waterGrams: Double
     var ratio: Double
     var shotSeconds: Int?
+
+    /// Planned vs actual brew duration (1.1). Both are **optional with a nil
+    /// default**, which is what makes this a lightweight SwiftData migration:
+    /// existing records simply read back as `nil` and the log renders them the
+    /// way it always did.
+    var plannedSeconds: Int?
+    var actualSeconds: Int?
+
     var rating: Int?
     var notes: String?
 
@@ -43,6 +51,8 @@ final class BrewLogRecord {
         waterGrams: Double,
         ratio: Double,
         shotSeconds: Int? = nil,
+        plannedSeconds: Int? = nil,
+        actualSeconds: Int? = nil,
         rating: Int? = nil,
         notes: String? = nil
     ) {
@@ -53,6 +63,8 @@ final class BrewLogRecord {
         self.waterGrams = waterGrams
         self.ratio = ratio
         self.shotSeconds = shotSeconds
+        self.plannedSeconds = plannedSeconds
+        self.actualSeconds = actualSeconds
         self.rating = rating
         self.notes = notes
     }
@@ -67,6 +79,8 @@ final class BrewLogRecord {
             waterGrams: entry.waterGrams,
             ratio: entry.ratio,
             shotSeconds: entry.shotSeconds,
+            plannedSeconds: entry.plannedSeconds,
+            actualSeconds: entry.actualSeconds,
             rating: entry.rating,
             notes: entry.notes
         )
@@ -88,6 +102,8 @@ final class BrewLogRecord {
             waterGrams: waterGrams,
             ratio: ratio,
             shotSeconds: shotSeconds,
+            plannedSeconds: plannedSeconds,
+            actualSeconds: actualSeconds,
             rating: rating,
             notes: notes
         )

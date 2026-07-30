@@ -33,6 +33,12 @@ struct LogDetailView: View {
                 if let shot = record.shotSeconds {
                     summaryRow("Shot time", "\(shot)s")
                 }
+                if let planned = record.plannedSeconds {
+                    summaryRow("Planned time", TimeFormat.mmss(planned))
+                }
+                if let actual = record.actualSeconds {
+                    summaryRow("Actual time", TimeFormat.mmss(actual), detail: deltaText)
+                }
                 summaryRow("Date", record.date.formatted(date: .abbreviated, time: .shortened))
             }
             .listRowBackground(Color.cgSurface)
@@ -102,11 +108,30 @@ struct LogDetailView: View {
 
     // MARK: Row helpers
 
-    private func summaryRow(_ label: String, _ value: String) -> some View {
+    /// How far the brew ran over or under its plan, e.g. "+0:12 over plan".
+    /// `nil` when we don't have both numbers, or when they match exactly.
+    private var deltaText: String? {
+        guard let delta = record.entry.timeDeltaSeconds, delta != 0 else { return nil }
+        let magnitude = TimeFormat.mmss(abs(delta))
+        return delta > 0 ? "+\(magnitude) over plan" : "−\(magnitude) under plan"
+    }
+
+    private func summaryRow(
+        _ label: String,
+        _ value: String,
+        detail: String? = nil
+    ) -> some View {
         HStack {
             Text(label).foregroundStyle(Color.cgTextSecondary)
             Spacer()
-            Text(value).foregroundStyle(Color.cgTextPrimary)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(value).foregroundStyle(Color.cgTextPrimary)
+                if let detail {
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(Color.cgTextSecondary)
+                }
+            }
         }
     }
 

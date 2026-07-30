@@ -58,6 +58,30 @@ public enum BrewStep: Equatable, Sendable, Hashable {
     /// True when the step has no fixed duration and the user taps to continue.
     public var requiresManualAdvance: Bool { duration == nil }
 
+    /// Whether this step's `duration` is a **soft target** — a goal the timer
+    /// counts past rather than a deadline it enforces.
+    ///
+    /// The distinction is *hands-on vs unattended*:
+    ///
+    /// - **Hands-on** (bloom, pour, stir) — you are at the scale and can easily
+    ///   run long. Auto-advancing here gives an actively wrong instruction: if
+    ///   your pour to 164 g takes 55 s, jumping to "Pour 2" tells you to add
+    ///   more water before you have finished the first. So the step holds at
+    ///   its target and counts up until you tap next.
+    /// - **Unattended** (steep, wait) — you are doing nothing and may have
+    ///   walked away; the clock *is* the instruction. These auto-advance, which
+    ///   is also what fires the French Press "plunge now" prompt before the
+    ///   brew over-extracts.
+    ///
+    /// Manual steps (`plunge`, `drawdown`) already wait for the user, so this
+    /// is `false` for them — there is no target to overrun.
+    public var usesSoftTarget: Bool {
+        switch self {
+        case .bloom, .pour, .stir: true
+        case .steep, .wait, .plunge, .drawdown: false
+        }
+    }
+
     /// Short imperative title for the timer UI. Kept in Core (it is pure text,
     /// no UI dependency) so it can be unit-tested and localized centrally.
     public var title: String {

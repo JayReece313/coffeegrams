@@ -45,12 +45,18 @@ struct BrewSessionView: View {
         )
     }
 
-    /// The label for the button that launches this session.
+    /// The label for the calculator button that *opens* this session.
+    ///
+    /// Deliberately not "Start …": this button only navigates. The clock is
+    /// started by a second, deliberate press on the session screen once the
+    /// user has actually ground, boiled and zeroed the scale — auto-starting
+    /// here would mistime the first pour. These labels say "prepare", the
+    /// session screen's say "start", so the two steps read as distinct.
     static func startTitle(for method: BrewMethod) -> String {
         switch method {
-        case .espresso: "Start Shot"
+        case .espresso: "Set Up Shot"
         case .coldBrew: "View Plan"
-        default: "Start Brew"
+        default: "Set Up Brew"
         }
     }
 }

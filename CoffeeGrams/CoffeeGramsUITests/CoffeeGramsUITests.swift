@@ -76,16 +76,24 @@ final class CoffeeGramsUITests: XCTestCase {
         XCTAssertTrue(calcStart.waitForExistence(timeout: 10))
         calcStart.tap()
 
-        // Begin the timer.
-        let start = app.buttons["Start Brew"]
+        // Begin the timer. (1.1: the calculator button "sets up" the brew, this
+        // one starts the clock — the labels must stay distinct.)
+        let start = app.buttons["Start Timer"]
         XCTAssertTrue(start.waitForExistence(timeout: 10))
         start.tap()
 
         // Skip through the timed steps until the manual "Done" appears.
-        for _ in 0..<6 {
+        // 1.1: hands-on steps hold at their target and offer "Next"; a step
+        // still counting down offers the tertiary "Skip step". Either moves on.
+        for _ in 0..<8 {
             if app.buttons["Done"].exists { break }
-            let skip = app.buttons["Skip"]
-            if skip.exists { skip.tap() } else { break }
+            if app.buttons["Next"].exists {
+                app.buttons["Next"].tap()
+            } else if app.buttons["Skip step"].exists {
+                app.buttons["Skip step"].tap()
+            } else {
+                break
+            }
         }
         let done = app.buttons["Done"]
         if done.waitForExistence(timeout: 3) { done.tap() }

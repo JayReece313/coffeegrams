@@ -6,7 +6,7 @@ release here so it stays the single source of truth for what 1.1 needs.
 
 ## Bug fixes & UX improvements (from 1.0 device testing)
 
-### 1. BUG — decimal keypad won't dismiss on the Calculator
+### 1. BUG — decimal keypad won't dismiss on the Calculator ✅ FIXED
 - **Symptom:** tapping the **Coffee dose** field raises the number pad, which
   stays up (covering the Start Brew button) until you navigate away. Confirmed on
   device + simulator.
@@ -18,8 +18,12 @@ release here so it stays the single source of truth for what 1.1 needs.
   `.scrollDismissesKeyboard(.interactively)` on the `Form` and/or tap-to-dismiss.
   The toolbar "Done" is the standard, most discoverable fix for numeric keypads.
   Applies anywhere we use `.decimalPad`/`.numberPad`.
+- **AS BUILT:** `@FocusState` + `ToolbarItemGroup(placement: .keyboard)` with a
+  right-aligned **Done**, plus `.scrollDismissesKeyboard(.interactively)` on the
+  `Form` for a gestural second affordance. The dose field is the only
+  `.decimalPad` in the app, so this is the complete fix.
 
-### 2. UX — duplicate "Start Brew" (Calculator → Timer)
+### 2. UX — duplicate "Start Brew" (Calculator → Timer) ✅ FIXED
 - **Symptom:** "Start Brew" on the calculator only *navigates* to the timer, which
   shows a **second, identical "Start Brew"** to actually start the countdown — two
   taps, confusing.
@@ -42,6 +46,10 @@ release here so it stays the single source of truth for what 1.1 needs.
 - **DECISION (owner):** ✅ **Option A** — relabel only: **"Set Up Brew"** on the
   calculator and **"Start Timer"** on the timer screen; keep the deliberate
   two-step start (accurate first-pour timing). **No auto-start.**
+- **AS BUILT:** `BrewSessionView.startTitle(for:)` now returns **"Set Up Brew"**
+  (and **"Set Up Shot"** for espresso, which had the same duplicate-label
+  problem; cold brew keeps "View Plan"). `GuidedBrewView`'s idle button is
+  **"Start Timer"**. The XCUITest was updated to the new label.
 
 ### 3. TIMER — continuous elapsed clock + explicit Start/Stop + log actual time ✅ CONFIRMED
 - **What happens today:** each step is a **countdown**. Timed steps
@@ -59,6 +67,15 @@ release here so it stays the single source of truth for what 1.1 needs.
   - **Design call:** when a timed step hits 0, keep **auto-advance** (current) or
     switch to **soft targets** (count past the target, wait for the user's tap).
     Leaning *soft targets* (more forgiving) — decide when building.
+    → **DECIDED (owner, 2026-07-29): soft targets on hands-on steps only.**
+    The split is *hands-on vs unattended*: **bloom / pour / stir** hold at their
+    target and count up (`+0:07`) until you tap **Next** — auto-advancing there
+    gives an actively wrong instruction, telling you to start Pour 2 before
+    you've finished Pour 1. **Steep / wait** still auto-advance: you may have
+    walked away, the clock *is* the instruction, and it's what fires the French
+    Press "plunge now" prompt before the brew over-extracts. Applying soft
+    targets to a 4:00 steep as well was rejected for exactly that reason.
+    Encoded as `BrewStep.usesSoftTarget`.
   - **Log the actual finish time** — the engine already tracks `totalElapsed`, and
     espresso already logs actual `shotSeconds`; extend that to all methods:
     add an actual-time field to the log and show **planned vs actual**.
@@ -67,6 +84,33 @@ release here so it stays the single source of truth for what 1.1 needs.
   `GuidedBrewViewModel.swift` (master clock + toggle + Done), reconcile with
   `EspressoShotView`; `Models/BrewLogEntry.swift`, `Persistence/BrewLogRecord.swift`,
   `Features/Log/LogDetailView.swift` + `LogView.swift` (new actual-time field).
+- **AS BUILT (2026-07-29):**
+  - **Core** — `BrewStep.usesSoftTarget`; new `BrewTimerPhase.overrunning` and
+    `BrewTimerEvent.reachedTarget`; `totalWallElapsed` master clock that runs
+    through overruns *and* manual holds and stops only when paused (kept
+    separate from `totalElapsed`, which still measures progress against the plan
+    so the progress bar can't exceed 100%); `overrunInStep`; pause/resume from
+    any live phase; and `finish()` to end a brew where it stands.
+  - **App** — a "TOTAL m:ss" count-up readout under the step countdown; the big
+    numeral shows `+0:07` in gold with an "OVER TARGET" caption while
+    overrunning (the `+` and the caption are the non-colour cues); controls are
+    now a contextual **Next**/**Done** primary, a **Pause/Resume** ⇄ **End Brew**
+    row, and "Skip step" as tertiary. A `targetReached()` haptic marks the
+    moment a pour hits its target.
+  - **Naming deviation from the plan:** the finish button is **"End Brew"**, not
+    "Done". On a manual step the step's own action is already "Done", and two
+    "Done" buttons side by side would have recreated the exact duplicate-label
+    bug that item 2 above fixes.
+  - **Log** — `plannedSeconds` + `actualSeconds` on `BrewLogEntry` and
+    `BrewLogRecord` (both optional with nil defaults → lightweight SwiftData
+    migration; pre-1.1 rows just omit the line). The log list shows
+    "4:45 actual · 4:15 planned" and the detail screen adds Planned/Actual rows
+    with a "+0:30 over plan" delta.
+  - **Tests** — Core suite extended to 47 passing tests (soft-target hold,
+    unattended auto-advance, master clock through holds and pauses, `finish()`);
+    app suite adds master-clock, planned-vs-actual and End Brew coverage; the
+    XCUITest brew→save→log flow was updated to the new controls and passes.
+    Debug + Release build warning-free.
 - **Status:** ✅ **CONFIRMED for 1.1** (owner approved the design 2026-07-20).
 - **⚠️ Manual test gate (this feature only):** the timer/clock + Start/Stop + Done
   buttons must pass the **owner's manual test in the simulator** before moving on.

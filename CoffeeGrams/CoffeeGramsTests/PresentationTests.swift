@@ -23,6 +23,17 @@ extension AppTests {
     @Test("negative input clamps to zero")
     func negativeClamps() {
         #expect(TimeFormat.mmss(-3) == "0:00")
+        #expect(TimeFormat.spoken(-3) == "0 seconds")
+    }
+
+    @Test("spoken form reads durations as words for VoiceOver")
+    func spoken() {
+        #expect(TimeFormat.spoken(0) == "0 seconds")
+        #expect(TimeFormat.spoken(1) == "1 second")   // singular
+        #expect(TimeFormat.spoken(45) == "45 seconds")
+        #expect(TimeFormat.spoken(60) == "1 minute")  // whole minute, no seconds
+        #expect(TimeFormat.spoken(134) == "2 minutes 14 seconds")
+        #expect(TimeFormat.spoken(240) == "4 minutes")
     }
 }
 
