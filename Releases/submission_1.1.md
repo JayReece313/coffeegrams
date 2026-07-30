@@ -97,11 +97,24 @@ Same as 1.0 §4 — signing, certificate, and App ID are all already in place.
       [`screenshots/README.md`](screenshots/README.md).
 
       Run from the **repo root**. Per our standards the simulator is discovered,
-      never hardcoded — this picks the newest Pro Max the machine actually has:
+      never hardcoded. It resolves to a **UDID**, not a name — names repeat
+      across installed runtimes, so a name alone can't say which device you
+      mean — and the selection is done in `python3` (ships with Xcode) rather
+      than `sort -V`, which isn't dependable on a stock macOS `sort`:
 
       ```sh
-      SIM=$(xcrun simctl list devices available \
-              | grep -oE 'iPhone [0-9]+ Pro Max' | sort -V | tail -1)
+      SIM=$(xcrun simctl list devices available --json | python3 -c '
+      import json, re, sys
+      best = None
+      for runtime, devices in json.load(sys.stdin)["devices"].items():
+          for dev in devices:
+              m = re.fullmatch(r"iPhone (\d+) Pro Max", dev["name"])
+              if m:
+                  key = (int(m.group(1)), runtime)
+                  if best is None or key > best[0]:
+                      best = (key, dev)
+      print(best[1]["udid"] if best else "", end="")')
+
       SHOT=Releases/screenshots/03-guided-timer.png
       echo "capturing on ${SIM:?no Pro Max simulator installed} → $SHOT"
 
