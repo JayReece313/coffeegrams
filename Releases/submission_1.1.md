@@ -22,7 +22,7 @@ Three things in particular you do **not** need to touch:
 |---|---|
 | §5 of the 1.0 runbook (create the IAP) | `com.jrlabapps.coffeegrams.pro` already exists and is approved. A *first* IAP must ride along with a version; a subsequent update must not re-submit it. |
 | §6 (Category, Price, App Privacy, Age Rating, DSA trader) | App-level settings persist across versions. 1.1 adds no SDK, no tracking, and no new data collection, so **"Data Not Collected" still holds** — do not re-answer the privacy questionnaire. |
-| Screenshots — **most of them** | 1.1 is iPhone-only and portrait, so the existing 1290×2796 set still matches. **One exception: the guided-brew shot must be retaken — see §3.** |
+| Screenshots — **the sizing and the set** | 1.1 is iPhone-only and portrait, so the 1290×2796 6.9" set is still the right shape and count. **But two shots must be retaken and a third is worth retaking — see §3.** |
 
 ---
 
@@ -30,23 +30,36 @@ Three things in particular you do **not** need to touch:
 
 1. Merge to `main` with Qodo clean, confirm the version numbers
 2. Archive + upload the build
-3. Version page (What's New, build, **new guided-brew screenshot**, manual release)
+3. Version page (What's New, build, **refreshed screenshots**, manual release)
 4. Review Submission — **one item this time**, not two
 
 ---
 
 ## 1. Pre-flight **[you]**
 
-- [ ] **PR #2 merged to `main`** with Qodo findings at zero.
+- [x] **All 1.1 PRs merged to `main`** — #2 (the fixes), #3 (model guidance) and
+      #4 (runbook hardening). Nothing outstanding in the repo. *(Qodo findings at
+      zero except rule 2205425, a known false positive — it infers the runbook is
+      missing from `release_1.1.md`'s header instead of checking the file tree, so
+      no repo edit can clear it. Dismiss it; fix it cloud-side before 1.2.)*
 - [ ] **`git pull` on `main`** so you archive the merged code, not the branch.
-- [ ] **Version numbers** — confirm in Xcode (target → General) or:
+      Re-tick this one at archive time — the screenshot refresh lands after the
+      checks below.
+- [x] **Version numbers** — verified 2026-08-03: `MARKETING_VERSION` **1.1**,
+      `CURRENT_PROJECT_VERSION` **2**, consistent across all build configs.
       ```sh
       grep -m1 MARKETING_VERSION CoffeeGrams/CoffeeGrams.xcodeproj/project.pbxproj      # 1.1
       grep -m1 CURRENT_PROJECT_VERSION CoffeeGrams/CoffeeGrams.xcodeproj/project.pbxproj # 2
       ```
-      **Build number must be higher than any build already uploaded** — App Store
-      Connect rejects a duplicate at upload, after the whole archive.
-- [ ] **All suites green + warning-free**, from the repo root:
+- [ ] **Build number must be higher than any build already uploaded** — App Store
+      Connect rejects a duplicate at upload, *after* the whole archive. This one
+      can't be verified from the repo: check TestFlight before archiving, and bump
+      `CURRENT_PROJECT_VERSION` to 3 if build 2 was ever uploaded.
+- [x] **All suites green + warning-free** — verified 2026-08-03: Core **49/49** in
+      4 suites, app `** TEST SUCCEEDED **`, Release build clean. (The only build
+      output is three `appintentsmetadataprocessor` "no AppIntents.framework"
+      notes — a toolchain info message, not a compiler warning.) Re-run after the
+      screenshot branch merges:
       ```sh
       (cd CoffeeGramsCore && swift test)
       (cd CoffeeGrams && xcodebuild test -scheme CoffeeGrams \
@@ -75,75 +88,68 @@ Same as 1.0 §4 — signing, certificate, and App ID are all already in place.
 - [ ] **What's New in This Version** — copy from the block below. Required for an
       update; this is the one field 1.0 didn't have.
 - [ ] **Build** — select the build you just uploaded.
-- [ ] ⚠️ **Screenshots — the guided-brew shot MUST be replaced. This is not
-      optional and not a judgement call.** 1.1 redesigned that screen, so the
-      one currently on the listing shows a UI the app no longer has:
+- [x] ⚠️ **Screenshots — two MUST be replaced. Not optional, not a judgement
+      call.** 1.1 changed the UI in both, so the shots on the listing show
+      controls the app no longer has. **Both were recaptured on 2026-08-03** and
+      are committed at 1290×2796; they only need uploading.
 
-      | On the current screenshot (1.0) | In the shipped 1.1 build |
-      |---|---|
-      | No total-elapsed readout | A "TOTAL m:ss" count-up under the step timer |
-      | Countdown only | The final step counts **up** as `+m:ss` |
-      | Pause / Skip buttons | Pause/Resume ⇄ End Brew, with "Skip step" demoted to tertiary |
+      | Shot | On the 1.0 screenshot | In the shipped 1.1 build |
+      |---|---|---|
+      | `02-calculator.png` | Call to action reads **"Start Brew"** | Reads **"Set Up Brew"** (`BrewSessionView.startTitle`) |
+      | `03-guided-timer.png` | No total-elapsed readout | A "TOTAL m:ss" count-up under the step timer |
+      | `03-guided-timer.png` | **Pause / Skip** buttons | **Pause ⇄ End Brew**, with "Skip step" demoted to tertiary |
 
       A listing screenshot that doesn't match the built app is a documented
-      rejection reason, and it's the one asset 1.1 genuinely invalidated.
+      rejection reason. The calculator one is the easier to miss of the two: the
+      change is a single word on one button, but it's the button the whole
+      screen exists to lead to.
 
-      **Capture size — expect a two-step, same as 1.0.** The upload size is
-      **1290×2796** (canonical 6.9"), but current Pro Max simulators capture
-      *larger* — iPhone 17 Pro Max gives 1320×2868 — and some ASC uploaders
-      reject the bigger file. So you capture natively and **fit down** to
-      1290×2796, exactly how the existing set was made, which also keeps the new
-      shot dimensionally identical to the other four. Canonical sizing guidance:
-      [`screenshots/README.md`](screenshots/README.md).
+      **Both new shots include a back chevron** the 1.0 set didn't have, because
+      they're captured by walking the real app from the method list rather than
+      deep-linking into the screen. That's what a user actually sees, and Apple
+      accepts nav chrome in screenshots.
 
-      Run from the **repo root**. Per our standards the simulator is discovered,
-      never hardcoded. It resolves to a **UDID**, not a name — names repeat
-      across installed runtimes, so a name alone can't say which device you
-      mean — and the selection is done in `python3` (ships with Xcode) rather
-      than `sort -V`, which isn't dependable on a stock macOS `sort`:
+      **Recapturing, if you ever need to redo them.** One command from the repo
+      root — it discovers the simulator, pins the status bar to 9:41, drives the
+      app, and writes upload-ready files straight over the tracked assets:
 
       ```sh
-      SIM=$(xcrun simctl list devices available --json | python3 -c '
-      import json, re, sys
-      best = None
-      for runtime, devices in json.load(sys.stdin)["devices"].items():
-          rm = re.search(r"iOS-([\d-]+)", runtime)          # iOS runtimes only
-          if not rm:
-              continue
-          ver = tuple(int(n) for n in rm.group(1).split("-"))  # numeric, not string
-          for dev in devices:
-              dm = re.fullmatch(r"iPhone (\d+) Pro Max", dev["name"])
-              if dm:
-                  key = (int(dm.group(1)), ver)
-                  if best is None or key > best[0]:
-                      best = (key, dev)
-      print(best[1]["udid"] if best else "", end="")')
-
-      SHOT=Releases/screenshots/03-guided-timer.png
-      echo "capturing on ${SIM:?no Pro Max simulator installed} → $SHOT"
-
-      xcrun simctl boot "$SIM" 2>/dev/null; open -a Simulator   # if not already up
-
-      # 1. Capture at the device's native size, straight over the tracked file
-      xcrun simctl io "$SIM" screenshot "$SHOT"
-
-      # 2. Fit to the upload size
-      sips -z 2796 1290 "$SHOT"
-
-      # 3. Verify before uploading — expect 1290 × 2796
-      sips -g pixelWidth -g pixelHeight "$SHOT"
+      ./Releases/screenshots/capture.sh                  # both
+      ./Releases/screenshots/capture.sh 03-guided-timer  # just one
       ```
 
-      Writing straight to `$SHOT` overwrites the tracked asset, so there's no
-      way to produce a correct image and still upload the stale one by mistake.
+      How it works, and why it isn't the 1.0 method: the 1.0 set came from a
+      temporary `CG_SHOT` switch **inside the app target** that had to be added
+      before a capture and deleted afterwards. This drives the real UI from
+      `CoffeeGramsUITests/ScreenshotCaptureTests.swift` instead, so no
+      capture-only code ever exists in the shipping binary. It builds
+      **`-configuration Release`**, so the shots are of the configuration that
+      ships rather than a Debug build. Those tests also assert the two 1.1
+      strings ("Set Up Brew", the Pause/End Brew pair) on *every* run, so the
+      suite now fails if the UI drifts from the screenshots again.
 
-      **To reach the screen:** open **French Press** — the free method, so no
-      purchase is needed — then **Set Up Brew → Start Timer** and let it run to
-      a step showing the new controls. Match the framing of the current
-      `03-guided-timer.png` so the set stays visually consistent.
+      **Capture size — still a two-step, same as 1.0.** The upload size is
+      **1290×2796** (canonical 6.9"), but current Pro Max simulators capture
+      *larger* — iPhone 17 Pro Max gives 1320×2868 — and some ASC uploaders
+      reject the bigger file, so the script fits every frame down and verifies
+      the result before it exits. Canonical sizing guidance:
+      [`screenshots/README.md`](screenshots/README.md).
 
-- [ ] **Remaining screenshots** — leave as-is. 1.1 stayed iPhone-only and
-      portrait, so the rest of the set is still accurate. Don't redo work.
+      Per our standards the simulator is discovered, never hardcoded, and
+      resolves to a **UDID** rather than a name — names repeat across installed
+      runtimes. The version sort is done in `python3` (ships with Xcode) because
+      `sort -V` isn't dependable on a stock macOS `sort`.
+
+- [ ] **`05-brew-log.png` — optional, your call.** 1.1 added an "`m:ss` actual ·
+      `m:ss` planned" line to each log row (`LogView.swift`), which the current
+      shot predates. It is **not** inaccurate: those fields are nil-defaulted for
+      backward compatibility, so pre-1.1 records really do render without that
+      line in the shipped 1.1 build. Retaking it would showcase a headline
+      What's New item, so it's a marketing call, not a compliance one — left
+      as-is for now. It isn't scripted yet either: it needs a populated log,
+      which `ScreenshotCaptureTests` doesn't set up.
+- [ ] **`01-home.png` and `04-paywall.png`** — leave as-is. 1.1 stayed
+      iPhone-only and portrait and changed neither screen. Don't redo work.
 - [ ] **Description / keywords / promotional text** — unchanged from 1.0 unless
       you want to work the timer improvements into the description.
 - [ ] **Version Release** → **Manually release this version**.
@@ -196,8 +202,9 @@ Fixes and a better brew timer.
 
 ## Pre-flight reminders
 
-- **Retake the guided-brew screenshot.** The listing's current one shows the 1.0
-  timer, which 1.1 replaced. Easiest step to skip, and a rejection reason.
+- **Upload the two refreshed screenshots** (`02-calculator`, `03-guided-timer`).
+  They're recaptured and committed; the remaining risk is uploading the version
+  page without swapping them. Easiest step to skip, and a rejection reason.
 - **Archive from `main` after the merge**, not from the release branch.
 - **Bump the build number** if you ever upload a second 1.1 build — ASC rejects duplicates.
 - **One item in the Review Submission**, not two.
