@@ -37,14 +37,14 @@ Three things in particular you do **not** need to touch:
 
 ## 1. Pre-flight **[you]**
 
-- [x] **All 1.1 PRs merged to `main`** — #2 (the fixes), #3 (model guidance) and
-      #4 (runbook hardening). Nothing outstanding in the repo. *(Qodo findings at
-      zero except rule 2205425, a known false positive — it infers the runbook is
-      missing from `release_1.1.md`'s header instead of checking the file tree, so
-      no repo edit can clear it. Dismiss it; fix it cloud-side before 1.2.)*
+- [x] **All 1.1 PRs merged to `main`** — #2 (the fixes), #3 (model guidance),
+      #4 (runbook hardening) and #5 (screenshot refresh), with #5's Qodo findings
+      resolved. Nothing outstanding in the repo. *(Rule 2205425 stays a known
+      false positive — it infers the runbook is missing from `release_1.1.md`'s
+      header instead of checking the file tree, so no repo edit can clear it.
+      Dismiss it; fix it cloud-side before 1.2.)*
 - [ ] **`git pull` on `main`** so you archive the merged code, not the branch.
-      Re-tick this one at archive time — the screenshot refresh lands after the
-      checks below.
+      Tick at archive time.
 - [x] **Version numbers** — verified 2026-08-03: `MARKETING_VERSION` **1.1**,
       `CURRENT_PROJECT_VERSION` **2**, consistent across all build configs.
       ```sh
@@ -55,11 +55,13 @@ Three things in particular you do **not** need to touch:
       Connect rejects a duplicate at upload, *after* the whole archive. This one
       can't be verified from the repo: check TestFlight before archiving, and bump
       `CURRENT_PROJECT_VERSION` to 3 if build 2 was ever uploaded.
-- [x] **All suites green + warning-free** — verified 2026-08-03: Core **49/49** in
-      4 suites, app `** TEST SUCCEEDED **`, Release build clean. (The only build
+- [x] **All suites green + warning-free** — verified 2026-08-03 **on merged
+      `main` (`637fc29`)**, after every 1.1 PR had landed: Core **49/49** in 4
+      suites, app `** TEST SUCCEEDED **`, Release build clean. (The only build
       output is three `appintentsmetadataprocessor` "no AppIntents.framework"
-      notes — a toolchain info message, not a compiler warning.) Re-run after the
-      screenshot branch merges:
+      notes — a toolchain info message, not a compiler warning.) Nothing has
+      changed in the repo since, so this needs re-running only if you commit
+      something further:
       ```sh
       (cd CoffeeGramsCore && swift test)
       (cd CoffeeGrams && xcodebuild test -scheme CoffeeGrams \
@@ -140,14 +142,17 @@ Same as 1.0 §4 — signing, certificate, and App ID are all already in place.
       runtimes. The version sort is done in `python3` (ships with Xcode) because
       `sort -V` isn't dependable on a stock macOS `sort`.
 
-- [ ] **`05-brew-log.png` — optional, your call.** 1.1 added an "`m:ss` actual ·
-      `m:ss` planned" line to each log row (`LogView.swift`), which the current
-      shot predates. It is **not** inaccurate: those fields are nil-defaulted for
-      backward compatibility, so pre-1.1 records really do render without that
-      line in the shipped 1.1 build. Retaking it would showcase a headline
-      What's New item, so it's a marketing call, not a compliance one — left
-      as-is for now. It isn't scripted yet either: it needs a populated log,
-      which `ScreenshotCaptureTests` doesn't set up.
+- [x] **`05-brew-log.png` — decided 2026-08-03: shipping 1.1 with the existing
+      shot.** 1.1 added an "`m:ss` actual · `m:ss` planned" line to each log row
+      (`LogView.swift`), which the current shot predates, so this was considered
+      and deliberately declined — not overlooked. It is **not** inaccurate:
+      those fields are nil-defaulted for backward compatibility, so pre-1.1
+      records really do render without that line in the shipped 1.1 build.
+      Retaking it would only showcase a What's New item, making it a marketing
+      call rather than a compliance one. Revisit for 1.2 if the log screen
+      changes again. (It isn't scripted either: it needs a populated log, and
+      only French Press is free, so seeding varied methods would need Pro
+      unlocked first.)
 - [ ] **`01-home.png` and `04-paywall.png`** — leave as-is. 1.1 stayed
       iPhone-only and portrait and changed neither screen. Don't redo work.
 - [ ] **Description / keywords / promotional text** — unchanged from 1.0 unless
