@@ -122,10 +122,11 @@ Same as 1.0 §4 — signing, certificate, and App ID are all already in place.
       temporary `CG_SHOT` switch **inside the app target** that had to be added
       before a capture and deleted afterwards. This drives the real UI from
       `CoffeeGramsUITests/ScreenshotCaptureTests.swift` instead, so no
-      capture-only code ever exists in the shipping binary and the shots are of
-      the build a reviewer will run. Those tests also assert the two 1.1 strings
-      ("Set Up Brew", the Pause/End Brew pair), so the suite now fails if the UI
-      drifts from the screenshots again.
+      capture-only code ever exists in the shipping binary. It builds
+      **`-configuration Release`**, so the shots are of the configuration that
+      ships rather than a Debug build. Those tests also assert the two 1.1
+      strings ("Set Up Brew", the Pause/End Brew pair) on *every* run, so the
+      suite now fails if the UI drifts from the screenshots again.
 
       **Capture size — still a two-step, same as 1.0.** The upload size is
       **1290×2796** (canonical 6.9"), but current Pro Max simulators capture

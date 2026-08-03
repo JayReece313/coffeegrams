@@ -26,10 +26,31 @@ accepts. Screenshot #4 (paywall) also works as the review screenshot for the IAP
 ```
 
 `capture.sh` discovers the newest installed iPhone Pro Max simulator by UDID,
-pins the status bar to 9:41, drives the real app via
+pins the status bar to 9:41, builds **Release**, drives the real app via
 `CoffeeGramsUITests/ScreenshotCaptureTests.swift`, pulls the frames out of the
 result bundle, fits them to 1290×2796 and writes them straight over the tracked
-files here.
+files here. It clears the status-bar override on the way out, including when it
+fails.
+
+No device name is baked in, but the default family is Pro Max on purpose:
+1290×2796 is the canonical 6.9" size, and another family captures a different
+aspect ratio that the fit-down would squash. Override if your machine has
+something else installed:
+
+```sh
+CG_SIM_UDID=<udid>               ./capture.sh   # this exact simulator
+CG_SIM_DEVICE='iPhone (\d+) Pro' ./capture.sh   # a different family
+```
+
+`CG_SIM_DEVICE` is a python regex matched with `fullmatch`, so it has to cover
+the device name end to end — `'iPhone .*Pro'` will *not* match "iPhone 17 Pro
+Max". The capture group around the model number is what picks the newest.
+
+The tests' *assertions* run in every suite — they pin the 1.1 UI strings so the
+listing can't silently drift from the build again — but the *shutter* only fires
+when `CG_CAPTURE=1` is in the simulator's environment, which `capture.sh` sets.
+A normal `xcodebuild test` therefore takes no screenshots, keeps no attachments
+and skips the wait for the clock to advance.
 
 **Currently scripted:** `02-calculator`, `03-guided-timer`.
 **Still manual:** `01-home`, `04-paywall`, `05-brew-log` — `05` needs a
