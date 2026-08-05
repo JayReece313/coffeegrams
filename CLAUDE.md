@@ -36,10 +36,40 @@ For every user request involving code, structure your response as follows:
 
 # Project Workflow & Planning
 - **Plan first, then track.** Once a plan is agreed and we're ready to implement, create a **Kanban card for every milestone and deliverable** — not just code, but design, docs, testing, review, and submission steps.
-- Mark a card **in progress** when starting and **done** when complete (or move to the applicable column). The board is the single source of truth for progress — keep it current.
 - **Give every new card a one-line description** in its body summarizing what the task covers, so the board reads as a standalone record.
-- Maintain a shareable **GitHub Projects board** (under the repo owner) that mirrors the task list; when adding a card, set **both** its column **and** its description.
+- Maintain a **GitHub Projects board** under the repo owner that mirrors the task list; when adding a card, set **both** its column **and** its description.
+- **Boards are private by default, and shared by invitation** — not by being public. Grant access to collaborators who need it; don't make a board public to make it reachable. Public boards expose every card: boards are built from **draft issues**, which live in the project itself, so GitHub's protection for items belonging to private repos does not cover them. Marketing/competitive planning and unshipped roadmaps are the clear cases to keep closed. Going public is a deliberate, per-board decision — ask first.
+- Because the board lives under the repo owner's account, **a fork or a copied repo cannot use it.** Create your own board and update the link; the workflow travels, the board does not.
 - Roadmap/future work lives in the backlog (To Do) as its own cards.
+
+## Close each card as you finish it — not at the end
+The board is the single source of truth for progress, which only holds if it is
+updated **at the moment work changes state**, never in a batch afterwards.
+
+- **Move the card to *In Progress* as the first step of starting a task, and to
+  *Done* as the last step of finishing it** — in the same working session,
+  before starting anything else. Closing the card is part of the task, not
+  paperwork that follows it.
+- **There is no end-of-milestone board cleanup.** If a tidy-up is ever needed,
+  the process has already failed. A board reconciled in one pass at the end is
+  reconstruction from memory, and it silently loses the ordering and detail
+  that made it worth keeping.
+- **"Done" means merged and verified** — not "PR opened", not "code written".
+  A card sitting in *In Progress* behind an open PR is accurate; move it only
+  when the PR lands.
+- **A card must never describe work that has already shipped.** If you catch
+  one that does, that is a process failure worth naming, not a quiet fix.
+- **Watch for duplicate cards.** A planning card and the implementation card
+  that supersedes it are the common pair. Close the superseded one and say what
+  superseded it in the body — don't delete the requirement history.
+
+**Why this is written down:** CoffeeGrams 1.1 shipped with **six stale cards**
+still sitting in *Todo* — including the keypad bug, the timer work, the Qodo
+review, and "Archive, TestFlight, submit for review", all long since released.
+Three of them turned out to be superseded planning cards, and the board also
+carried three backlog items mislabelled as 1.1 work that never went into 1.1.
+Reconstructing the true state took a dedicated pass, and for the whole time in
+between the board reported a released version as unstarted.
 
 # Repository Standards
 - **Every iOS app gets its own git repo, set up the same way as CoffeeGrams** (our reference standard): private-or-public per decision, meaningful commit history, branch + PR for changes so review runs.
