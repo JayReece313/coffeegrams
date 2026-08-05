@@ -30,8 +30,19 @@ is **Data Not Collected**, and it stays that way.
 ## Requirements
 
 - **Xcode 26+**, Swift 6 (strict concurrency)
-- The app targets **iOS 26.5**; `CoffeeGramsCore` builds back to **iOS 17 /
-  macOS 14**, which is what lets its tests run on the Mac from the command line
+- The **CoffeeGrams app target deploys to iOS 17.6** — that's the minimum the
+  shipped app supports
+- `CoffeeGramsCore` declares **iOS 17 / macOS 14**. The macOS platform is what
+  lets its suite run on the Mac from the command line, with no simulator
+
+> **Heads-up on a real inconsistency:** the *project-level* setting and the
+> `CoffeeGramsTests` target are both at **iOS 26.5**, above the app's own 17.6.
+> The app target's setting is the one that governs what ships, so the store
+> requirement is 17.6 — but it does mean the test targets can't run against a
+> simulator on the app's minimum OS. Worth reconciling deliberately (either
+> lower the test targets to 17.6, or raise the app and accept dropping iOS
+> 17–25 devices). Left alone here because it's a product decision, and 1.1 is
+> in App Store review as built.
 
 ## Build and run
 
