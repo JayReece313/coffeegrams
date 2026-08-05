@@ -1,12 +1,20 @@
-# CoffeeGrams — v1.1 App Store Submission Runbook
+# CoffeeGrams — v1.1 App Store Submission Runbook (AS-BUILT)
 
-> **Status: NOT YET SUBMITTED.** This is the plan; update it to AS-BUILT (with
-> the real dates and anything that differed) the moment 1.1 goes in, the way
-> [`submission_1.0.md`](submission_1.0.md) records the 1.0 flow.
+> **Status: 🟢 LIVE on the App Store 2026-08-05.** Submitted **2026-08-04** as
+> **one review item** (the app version alone — the approved Pro IAP was
+> correctly left out), approved **2026-08-04** — same-day review, against the
+> ~9 days 1.0 waited — and released manually on **2026-08-05**.
+>
+> This is the as-built record, not a plan. What actually differed from the plan
+> is in [§5 As-built notes](#5-as-built-notes--what-differed).
 
-`MARKETING_VERSION` **1.1** · `CURRENT_PROJECT_VERSION` **2** · Bundle ID
-`com.jrlabapps.CoffeeGrams` · **iPhone-only, portrait** (unchanged — iPad is
-1.2, see [`roadmap_future.md`](roadmap_future.md)).
+`MARKETING_VERSION` **1.1** · `CURRENT_PROJECT_VERSION` **2** (shipped as build
+2 — no second upload was needed) · Bundle ID `com.jrlabapps.CoffeeGrams` ·
+**iPhone-only, portrait** (unchanged — iPad is 1.2, see
+[`roadmap_future.md`](roadmap_future.md)).
+
+Repo state at submission: `main` at `f89129c`, clean, PRs #2–#6 all merged.
+Core **49/49**, app suite `TEST SUCCEEDED`, Release build warning-free.
 
 ## What makes this different from 1.0
 
@@ -43,18 +51,18 @@ Three things in particular you do **not** need to touch:
       false positive — it infers the runbook is missing from `release_1.1.md`'s
       header instead of checking the file tree, so no repo edit can clear it.
       Dismiss it; fix it cloud-side before 1.2.)*
-- [ ] **`git pull` on `main`** so you archive the merged code, not the branch.
-      Tick at archive time.
+- [x] **`git pull` on `main`** so you archive the merged code, not the branch.
+      Archived from `main` at `f89129c` on 2026-08-04.
 - [x] **Version numbers** — verified 2026-08-03: `MARKETING_VERSION` **1.1**,
       `CURRENT_PROJECT_VERSION` **2**, consistent across all build configs.
       ```sh
       grep -m1 MARKETING_VERSION CoffeeGrams/CoffeeGrams.xcodeproj/project.pbxproj      # 1.1
       grep -m1 CURRENT_PROJECT_VERSION CoffeeGrams/CoffeeGrams.xcodeproj/project.pbxproj # 2
       ```
-- [ ] **Build number must be higher than any build already uploaded** — App Store
-      Connect rejects a duplicate at upload, *after* the whole archive. This one
-      can't be verified from the repo: check TestFlight before archiving, and bump
-      `CURRENT_PROJECT_VERSION` to 3 if build 2 was ever uploaded.
+- [x] **Build number must be higher than any build already uploaded** — App Store
+      Connect rejects a duplicate at upload, *after* the whole archive. Checked
+      TestFlight first: **build 2 had never been uploaded**, so no bump was
+      needed and 1.1 shipped as **1.1 (2)**, accepted on the first upload.
 - [x] **All suites green + warning-free** — verified 2026-08-03 **on merged
       `main` (`637fc29`)**, after every 1.1 PR had landed: Core **49/49** in 4
       suites, app `** TEST SUCCEEDED **`, Release build clean. (The only build
@@ -74,22 +82,22 @@ Three things in particular you do **not** need to touch:
 
 Same as 1.0 §4 — signing, certificate, and App ID are all already in place.
 
-- [ ] Xcode → destination **Any iOS Device (arm64)** (you cannot archive against a simulator).
-- [ ] **Product → Archive**.
-- [ ] Organizer → **Distribute App** → **App Store Connect** → **Upload**.
-- [ ] Wait for the "processing" email, or watch ASC → **TestFlight**. A build that
+- [x] Xcode → destination **Any iOS Device (arm64)** (you cannot archive against a simulator).
+- [x] **Product → Archive**.
+- [x] Organizer → **Distribute App** → **App Store Connect** → **Upload**.
+- [x] Wait for the "processing" email, or watch ASC → **TestFlight**. A build that
       never appears has almost always failed processing — check email for the reason.
-- [ ] **TestFlight sanity pass** on a real device before submitting. For 1.1
+- [x] **TestFlight sanity pass** on a real device before submitting. For 1.1
       specifically, walk one full French Press brew: the keypad **Done** button,
       the **Set Up Brew → Start Timer** labels, the count-up on the plunge, and
       **Save to Log** showing planned vs actual.
 
 ## 3. Version page **[you]**
 
-- [ ] ASC → the app → **+ Version or Platform** → **iOS** → enter **1.1**.
-- [ ] **What's New in This Version** — copy from the block below. Required for an
+- [x] ASC → the app → **+ Version or Platform** → **iOS** → enter **1.1**.
+- [x] **What's New in This Version** — copy from the block below. Required for an
       update; this is the one field 1.0 didn't have.
-- [ ] **Build** — select the build you just uploaded.
+- [x] **Build** — select the build you just uploaded.
 - [x] ⚠️ **Screenshots — two MUST be replaced. Not optional, not a judgement
       call.** 1.1 changed the UI in both, so the shots on the listing show
       controls the app no longer has. **Both were recaptured on 2026-08-03** and
@@ -153,31 +161,118 @@ Same as 1.0 §4 — signing, certificate, and App ID are all already in place.
       changes again. (It isn't scripted either: it needs a populated log, and
       only French Press is free, so seeding varied methods would need Pro
       unlocked first.)
-- [ ] **`01-home.png` and `04-paywall.png`** — leave as-is. 1.1 stayed
+- [x] **`01-home.png` and `04-paywall.png`** — leave as-is. 1.1 stayed
       iPhone-only and portrait and changed neither screen. Don't redo work.
-- [ ] **Description / keywords / promotional text** — unchanged from 1.0 unless
+- [x] **Description / keywords / promotional text** — unchanged from 1.0 unless
       you want to work the timer improvements into the description.
-- [ ] **Version Release** → **Manually release this version**.
-- [ ] **Review notes** — no demo account needed; Pro is a one-time IAP and the
+- [x] **Version Release** → **Manually release this version**.
+- [x] **Review notes** — no demo account needed; Pro is a one-time IAP and the
       reviewer can exercise French Press without it. If they need Pro, say so here.
 
 ## 4. Review Submission **[you]**
 
-- [ ] ASC → **Review Submission** → **Add to Review** → the **1.1 app version only**.
-- [ ] ⚠️ **Do not add the IAP as a second item.** That was a 1.0 requirement
+- [x] ASC → **Review Submission** → **Add to Review** → the **1.1 app version only**.
+- [x] ⚠️ **Do not add the IAP as a second item.** That was a 1.0 requirement
       because it was the app's *first* IAP. Re-adding an already-approved IAP
       here is the most likely mistake on this submission.
-- [ ] **Submit to App Review**.
+- [x] **Submit to App Review**.
 
 ## After submitting
 
 - Status goes **Waiting for Review** → **In Review** → **Pending Developer Release**
   (because release is Manual).
-- Click **Release This Version** when you're ready.
-- [ ] Update this file to **AS-BUILT** with the submission date and any deviation.
-- [ ] Per the Retrospective Standard, add the 1.1 notes to `CoffeeGrams_Summary.md`
-      in the private `Summary` repo — including the **AI-agent process review**
-      checkpoint.
+- [x] **Submitted 2026-08-04**, one item. **Approved 2026-08-04** — review
+      returned the same day, so budget for approval arriving faster than 1.0's
+      ~9 days rather than planning around a long wait.
+- [x] Clicked **Release This Version** on **2026-08-05**. 1.1 is live.
+- [x] Update this file to **AS-BUILT** with the submission date and any
+      deviation — done 2026-08-04, closed out with the release on 2026-08-05,
+      see §5.
+- [x] Per the Retrospective Standard, add the 1.1 notes to
+      `CoffeeGrams_Summary.md` in the private `Summary` repo — including the
+      **AI-agent process review** checkpoint. Added as §8 of that document.
+
+---
+
+## 5. As-built notes — what differed
+
+The submission itself went to plan apart from one snag, which cost about ten
+minutes and is worth writing down because it will recur on every future
+release. A second issue surfaced afterwards, in review of this very document's
+PR, and is recorded below it.
+
+### The screenshot upload rejected the correct files
+
+Dragging `02-calculator.png` and `03-guided-timer.png` (both 1290×2796) into the
+version page produced:
+
+> The dimensions of one or more screenshots are wrong. Screenshots dimensions
+> should be: 1242 × 2688px, 2688 × 1242px, 1284 × 2778px or 2778 × 1284px
+
+**Nothing was wrong with the files.** Those are the **6.5" Display** sizes; the
+files had been dropped into the 6.5" slot. **CoffeeGrams' listing uses the
+6.9" Display slot**, where 1290×2796 is correct — the same size and slot the
+1.0 set has always used.
+
+**For next time:** in *App Previews and Screenshots*, pick the size slot using
+the device selector *first*, and pick the one that **already contains the
+existing set**. Don't rely on the first slot ASC happens to show. Recorded so
+1.2 doesn't repeat it. Our capture pipeline stays at 1290×2796 — no 6.5"
+variant is needed.
+
+### Some version fields appeared greyed out
+
+Cause worth remembering: screenshot and metadata fields are read-only unless
+you're on an **editable** version page. The usual reasons are being on the
+released 1.0 page rather than 1.1, not having created the 1.1 version yet, or
+the version already being submitted (which needs **Remove from Review** to
+re-open — safe, no penalty).
+
+### The string catalog followed the UI changes in, unnoticed
+
+This PR was meant to be documentation only. It also carried 19 lines of
+`Localizable.xcstrings`, because 1.1's new UI (the keypad **Done** button, the
+**TOTAL** caption, the `+%@` overrun clock, **Skip step**) added string keys and
+Xcode regenerated the catalog on the next build. Committing it is correct —
+the catalog belongs with the code that shipped — but it arrived as a side
+effect rather than a decision.
+
+Qodo then found three real defects in what Xcode had written:
+
+- **Two auto-generated comments were truncated mid-sentence** — `+%@` read
+  *"A timer displaying the final,"* and `Skip step` read *"A button that lets
+  you skip a"*.
+- **`TOTAL` was emitted as an empty object**, no comment at all, despite being
+  a user-visible label whose meaning is not obvious from four letters.
+- **`Done` is one key serving two different actions** — dismissing the
+  calculator keypad (`CalculatorView.swift`) and ending the brew on the final
+  step (`GuidedBrewViewModel.swift`) — yet the comment described only the
+  keyboard.
+
+All four comments are now hand-written **and flipped to
+`"isCommentAutoGenerated" : false`**. That flag is the part that matters:
+left at `true`, Xcode treats the comment as its own property and overwrites it
+on the next build, so the fix would have silently reverted.
+
+Nothing here reached users — the catalog is English-only
+(`sourceLanguage: en`, one localization), so there is no translator to mislead
+yet. **The debt is the `Done` key**: one key with two meanings is a
+mistranslation waiting for the first non-English locale, and the real fix is
+distinct keys via `String(localized:defaultValue:comment:)`. That is a source
+change, so it was deliberately not made after release — it belongs to 1.2.
+
+**For next time:** treat a regenerated `Localizable.xcstrings` as code needing
+review, not as a build artifact. Read every comment Xcode writes.
+
+### What went exactly to plan
+
+- **Build 2 accepted on the first upload** — the TestFlight pre-check confirmed
+  it had never been used, so no bump was needed.
+- **One review item.** The approved Pro IAP was correctly left out; the trap the
+  runbook warned about did not catch us.
+- **App Privacy untouched**, so "Data Not Collected" carried over intact.
+- **Three screenshots left alone** (`01-home`, `04-paywall`, `05-brew-log`) —
+  the 05 decision is recorded in §3 and still stands.
 
 ---
 
@@ -205,14 +300,21 @@ Fixes and a better brew timer.
 
 ---
 
-## Pre-flight reminders
+## Carry these into the next release
 
-- **Upload the two refreshed screenshots** (`02-calculator`, `03-guided-timer`).
-  They're recaptured and committed; the remaining risk is uploading the version
-  page without swapping them. Easiest step to skip, and a rejection reason.
+All five held up on 1.1 — none of them caught us out, which is the point of
+writing them down. Take them into 1.2.
+
+- **Audit *every* screenshot against the code, not against the last release's
+  notes.** This runbook originally said the guided-brew shot was the only asset
+  1.1 invalidated; it had missed that the calculator's button was renamed too.
+  Any release that changes a UI string can invalidate a screenshot.
+- **Pick the screenshot size slot before dragging** — the one that already holds
+  the existing set (6.9" Display for this listing). See §5.
 - **Archive from `main` after the merge**, not from the release branch.
-- **Bump the build number** if you ever upload a second 1.1 build — ASC rejects duplicates.
-- **One item in the Review Submission**, not two.
-- **Don't re-answer App Privacy.** 1.1 adds no data collection; re-opening the
-  questionnaire risks answering it differently by accident and contradicting the
-  privacy policy already hosted.
+- **Check TestFlight for the build number before archiving** — ASC rejects a
+  duplicate only at the end of the upload, wasting the whole archive.
+- **One item in the Review Submission**, not two, for any release after the
+  first that adds no new IAP.
+- **Don't re-answer App Privacy.** No new data collection means re-opening the
+  questionnaire only risks contradicting the privacy policy already hosted.
