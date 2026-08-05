@@ -19,8 +19,28 @@ inert while iPad is off, so that part is free when we flip the switch.
 **Why it was deferred from 1.0:** our UI was designed for iPhone portrait.
 Shipping it "universal" without an iPad layout pass risks looking stretched and
 getting rejected for poor iPad optimization. Adding iPad later is a normal,
-penalty-free App Store update (same review process), so we ship iPhone first and
-do iPad properly in 1.1.
+penalty-free App Store update (same review process), so we shipped iPhone first.
+It was deferred again out of 1.1, which carried the 1.0 bug fixes and the timer
+overhaul only — iPad is 1.2.
+
+### Which model to use
+
+Decided up front so a 1.2 session doesn't default to whatever is already open.
+1.1's closeout ran on Opus and mostly didn't need to.
+
+| Task | Model | Why |
+|---|---|---|
+| **iPad layout pass** — content-width constraints, `NavigationSplitView`, spacing/tap targets | **Sonnet 5** | Presentation work against a written spec (the list below). High volume, low ambiguity — near-Opus quality at ~60% of the cost |
+| Re-enable `TARGETED_DEVICE_FAMILY`, orientation keys | **Sonnet 5** | Mechanical build-setting edits |
+| iPad screenshots + extending the capture harness | **Sonnet 5** | Scripted, deterministic, already-solved pattern |
+| Split the `Done` string key | **Sonnet 5** | Small, well-specified refactor |
+| UI tests + iPad assertions | **Sonnet 5** | Routine test work |
+| **App Store "What's New", any listing copy** | **Opus 5** | ~200 words. The cost is a rounding error and prose voice is the deliverable — economising here is false thrift |
+| A genuinely ambiguous design call (e.g. sidebar vs. stack if the spec below turns out not to settle it) | **Opus 5** | Escalate *deliberately*, not by default |
+
+**Rule of thumb:** start 1.2 on Sonnet 5 and switch with `/model` only when you
+hit a real judgement call. See *Cost & Context Efficiency* in
+[`../CLAUDE.md`](../CLAUDE.md) for the standing guidance.
 
 ### What needs to change
 
