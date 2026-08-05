@@ -107,6 +107,14 @@ are what made the 1.0 build expensive. Start fresh per unit of work.
   checking the file tree, so no repo edit can satisfy it. Dismiss it.
 - **All suites green and Debug/Release warning-free** before a milestone is done.
 - **TDD-leaning:** every model, view model, and service ships with tests.
+- **Keep the board current as you go.** Work is tracked on the
+  [CoffeeGrams Build Board](https://github.com/users/JayReece313/projects/1)
+  (private). Move a card to *In Progress* as the **first** step of starting it
+  and to *Done* as the **last** step of finishing it — same session, before
+  moving on. *Done* means **merged**, not "PR opened". There is no
+  end-of-milestone cleanup pass: 1.1 shipped with six stale cards still in
+  *Todo*, and for that whole period the board reported a released version as
+  unstarted.
 
 ### Where things live
 
