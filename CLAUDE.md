@@ -37,7 +37,9 @@ For every user request involving code, structure your response as follows:
 # Project Workflow & Planning
 - **Plan first, then track.** Once a plan is agreed and we're ready to implement, create a **Kanban card for every milestone and deliverable** — not just code, but design, docs, testing, review, and submission steps.
 - **Give every new card a one-line description** in its body summarizing what the task covers, so the board reads as a standalone record.
-- Maintain a shareable **GitHub Projects board** (under the repo owner) that mirrors the task list; when adding a card, set **both** its column **and** its description.
+- Maintain a **GitHub Projects board** under the repo owner that mirrors the task list; when adding a card, set **both** its column **and** its description.
+- **Boards are private by default, and shared by invitation** — not by being public. Grant access to collaborators who need it; don't make a board public to make it reachable. Public boards expose every card: boards are built from **draft issues**, which live in the project itself, so GitHub's protection for items belonging to private repos does not cover them. Marketing/competitive planning and unshipped roadmaps are the clear cases to keep closed. Going public is a deliberate, per-board decision — ask first.
+- Because the board lives under the repo owner's account, **a fork or a copied repo cannot use it.** Create your own board and update the link; the workflow travels, the board does not.
 - Roadmap/future work lives in the backlog (To Do) as its own cards.
 
 ## Close each card as you finish it — not at the end
