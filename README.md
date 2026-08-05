@@ -4,14 +4,14 @@
 calculators and guided brew timers for six methods, with a brew log that records
 what you actually did.
 
-On the App Store as **CoffeeGrams: Brew Calculator** · by JR Labs LLC · bundle
-`com.jrlabapps.CoffeeGrams` ·
+[**Download on the App Store**](https://apps.apple.com/us/app/coffeegrams-brew-calculator/id6792577508)
+· by JR Labs LLC · bundle `com.jrlabapps.CoffeeGrams` · Apple ID `6792577508` ·
 [site](https://jayreece313.github.io/coffeegrams/)
 
 | | |
 |---|---|
-| **Live** | **1.0** — released 2026-07-29 |
-| **In review** | **1.1** — submitted 2026-08-04, manual release |
+| **Live** | **1.1** — released 2026-08-05 (submitted 2026-08-04, approved same day) |
+| **Previous** | **1.0** — released 2026-07-29 |
 
 ## What it does
 
@@ -41,8 +41,8 @@ is **Data Not Collected**, and it stays that way.
 > requirement is 17.6 — but it does mean the test targets can't run against a
 > simulator on the app's minimum OS. Worth reconciling deliberately (either
 > lower the test targets to 17.6, or raise the app and accept dropping iOS
-> 17–25 devices). Left alone here because it's a product decision, and 1.1 is
-> in App Store review as built.
+> 17–25 devices). Left alone here because it's a product decision, and 1.1
+> shipped as built.
 
 ## Build and run
 
@@ -143,9 +143,11 @@ shows):
 ```
 
 It discovers the newest iPhone Pro Max simulator by UDID, pins the status bar to
-9:41, builds **Release**, drives the real UI from `ScreenshotCaptureTests.swift`,
-and writes verified 1290×2796 files over the tracked assets. Never add
-capture-only code to the app target — that was the 1.0 approach and it can reach
+9:41, builds **Release**, drives the real UI from
+[`CoffeeGrams/CoffeeGramsUITests/ScreenshotCaptureTests.swift`](CoffeeGrams/CoffeeGramsUITests/ScreenshotCaptureTests.swift),
+and writes verified 1290×2796 files over the tracked assets. Note the target in
+that path: the capture lives in the **UI-test** target. Never add capture-only
+code to the app target — that was the 1.0 approach and it can reach
 a shipping binary. Details in
 [`Releases/screenshots/README.md`](Releases/screenshots/README.md).
 
@@ -173,19 +175,30 @@ These are the cross-file rules that reviewers and Apple keep catching:
 
 ### Status — what's next
 
-- **1.1 is in App Store review**, submitted 2026-08-04 as a single review item,
-  manual release. When approved, someone must click **Release This Version** in
-  App Store Connect — it will not go live on its own.
-- **Two PRs are open and deliberately unmerged** until that outcome is known:
-  the AS-BUILT runbook here, and the 1.1 retrospective in the private `Summary`
-  repo. Both need the real approval/release dates before merging.
+- **1.1 is live**, released 2026-08-05. It was submitted 2026-08-04 as a single
+  review item and approved the same day — worth knowing, because 1.0 waited
+  ~9 days. A small update with no new IAP and no App Privacy change reviews
+  much faster than a first submission.
+- **Release closeout is done.** The AS-BUILT runbook
+  ([`Releases/submission_1.1.md`](Releases/submission_1.1.md)) and the 1.1
+  retrospective in the private `Summary` repo are both merged.
 - **1.2 is iPad support**, plus whatever else is in
   [`Releases/roadmap_future.md`](Releases/roadmap_future.md) — iCloud sync and
-  custom app icons are parked there. Before that release PR, fix Qodo rule
-  2205425 cloud-side so the false positive stops firing.
+  custom app icons are parked there. Two things to clear *before* that release
+  PR:
+  - Fix **Qodo rule 2205425** cloud-side so the false positive stops firing.
+  - Split the **`Done`** string key in
+    [`CoffeeGrams/CoffeeGrams/Localizable.xcstrings`](CoffeeGrams/CoffeeGrams/Localizable.xcstrings).
+    One key currently serves two unrelated actions — dismissing the calculator
+    keypad (`CoffeeGrams/CoffeeGrams/Features/Calculator/CalculatorView.swift`)
+    and ending the brew
+    (`CoffeeGrams/CoffeeGrams/Features/GuidedBrew/GuidedBrewViewModel.swift`) —
+    which is invisible while the app is English-only and a mistranslation the
+    day it isn't. See
+    [§5 of the 1.1 runbook](Releases/submission_1.1.md#5-as-built-notes--what-differed).
 
-Don't redo any of the above — 1.0 shipped 2026-07-29 and 1.1 is finished and
-submitted. The repo itself has no outstanding work.
+Don't redo any of the above — 1.0 shipped 2026-07-29, 1.1 shipped 2026-08-05,
+and the repo has no outstanding work beyond the two 1.2 pre-tasks named above.
 
 ---
 
