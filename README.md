@@ -143,9 +143,11 @@ shows):
 ```
 
 It discovers the newest iPhone Pro Max simulator by UDID, pins the status bar to
-9:41, builds **Release**, drives the real UI from `ScreenshotCaptureTests.swift`,
-and writes verified 1290×2796 files over the tracked assets. Never add
-capture-only code to the app target — that was the 1.0 approach and it can reach
+9:41, builds **Release**, drives the real UI from
+[`CoffeeGrams/CoffeeGramsUITests/ScreenshotCaptureTests.swift`](CoffeeGrams/CoffeeGramsUITests/ScreenshotCaptureTests.swift),
+and writes verified 1290×2796 files over the tracked assets. Note the target in
+that path: the capture lives in the **UI-test** target. Never add capture-only
+code to the app target — that was the 1.0 approach and it can reach
 a shipping binary. Details in
 [`Releases/screenshots/README.md`](Releases/screenshots/README.md).
 
@@ -185,10 +187,15 @@ These are the cross-file rules that reviewers and Apple keep catching:
   custom app icons are parked there. Two things to clear *before* that release
   PR:
   - Fix **Qodo rule 2205425** cloud-side so the false positive stops firing.
-  - Split the **`Done`** string key in `Localizable.xcstrings`. One key
-    currently serves two unrelated actions (dismissing the calculator keypad,
-    and ending the brew), which is invisible while the app is English-only and
-    a mistranslation the day it isn't. See §5 of the 1.1 runbook.
+  - Split the **`Done`** string key in
+    [`CoffeeGrams/CoffeeGrams/Localizable.xcstrings`](CoffeeGrams/CoffeeGrams/Localizable.xcstrings).
+    One key currently serves two unrelated actions — dismissing the calculator
+    keypad (`CoffeeGrams/CoffeeGrams/Features/Calculator/CalculatorView.swift`)
+    and ending the brew
+    (`CoffeeGrams/CoffeeGrams/Features/GuidedBrew/GuidedBrewViewModel.swift`) —
+    which is invisible while the app is English-only and a mistranslation the
+    day it isn't. See
+    [§5 of the 1.1 runbook](Releases/submission_1.1.md#5-as-built-notes--what-differed).
 
 Don't redo any of the above — 1.0 shipped 2026-07-29, 1.1 shipped 2026-08-05,
 and the repo has no outstanding work beyond the two 1.2 pre-tasks named above.
