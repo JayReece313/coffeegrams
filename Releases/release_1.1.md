@@ -142,10 +142,14 @@ iPad moves to **1.2** and iCloud sync to **1.3+**; both are tracked in
     its job: the tests were green on a design the owner didn't want.
 
 
-## Decided: NO ads
+## Decided: NO ads *shown inside the app*
 
 Unchanged from 1.0 and not up for revisit — see
 [`roadmap_future.md`](roadmap_future.md) for the full reasoning.
+
+Not to be confused with the separate **"don't buy ads to promote the app"**
+decision taken 2026-08-05 in the marketing repo. Different subject, different
+reasoning; `roadmap_future.md` carries a table distinguishing the two.
 
 ## Execution checklist
 

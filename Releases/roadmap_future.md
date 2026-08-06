@@ -9,9 +9,13 @@ Add anything we decide for a future release here so it stays the single source
 of truth. Move a section into its own `release_<version>.md` when that release
 actually starts.
 
-## 1.2 — iPad support (next up)
+## 1.2 — iPad support + in-app rating prompt (next up)
 
-**Status: not started.** `TARGETED_DEVICE_FAMILY = 1` on every build config. The
+Two pieces of work. The iPad layout pass is the bulk of it; the **in-app rating
+prompt** is small but time-sensitive and is written up at the end of this
+section.
+
+**iPad — status: not started.** `TARGETED_DEVICE_FAMILY = 1` on every build config. The
 `UISupportedInterfaceOrientations~ipad` keys are already in the project and are
 inert while iPad is off, so that part is free when we flip the switch.
 
@@ -35,6 +39,7 @@ Decided up front so a 1.2 session doesn't default to whatever is already open.
 | iPad screenshots + extending the capture harness | **Sonnet 5** | Scripted, deterministic, already-solved pattern |
 | Split the `Done` string key | **Sonnet 5** | Small, well-specified refactor |
 | UI tests + iPad assertions | **Sonnet 5** | Routine test work |
+| **In-app rating prompt** — `AppStore.requestReview(in:)` plus the eligibility gate and its tests | **Sonnet 5** | Small, fully specified below; the only judgement call (the trigger) is already made |
 | **App Store "What's New", any listing copy** | **Opus 5** | ~200 words. The cost is a rounding error and prose voice is the deliverable — economising here is false thrift |
 | A genuinely ambiguous design call (e.g. sidebar vs. stack if the spec below turns out not to settle it) | **Opus 5** | Escalate *deliberately*, not by default |
 
@@ -79,6 +84,83 @@ hit a real judgement call. See *Cost & Context Efficiency* in
 ~1–2 focused sessions: layout adaptation + iPad testing. The logic layer
 (`CoffeeGramsCore`, ViewModels) needs no changes — this is purely presentation.
 
+### In-app rating prompt
+
+**Status: not started.** Decided 2026-08-06, out of the marketing repo's paid-ads
+research (see *Where this came from* below). **Ratings are the lever on App Store
+rank, and we have almost none.**
+
+| | |
+|---|---|
+| Ratings as of 2026-08-05 | **1** (5.0 avg) |
+| Competitor median | **~8,300** |
+| Rank for our own name, 2026-07-30 | **~#23** |
+
+Apps at **4.5+ convert installs at roughly double** the rate of those under 4.0,
+and rating count feeds search rank — so this is the cheapest lever available on
+both the download goal and the rank problem.
+
+**Use `AppStore.requestReview(in: scene)`** — StoreKit 2, iOS 16+.
+`SKStoreReviewController` is the older spelling and was **deprecated in iOS 18**;
+don't reach for it.
+
+```swift
+if let scene = UIApplication.shared.connectedScenes
+    .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+    AppStore.requestReview(in: scene)
+}
+```
+
+**Privacy label is unaffected.** StoreKit is Apple's own framework, not a
+third-party SDK, so "Data Not Collected" holds — consistent with *Architecture
+Standards* in [`../CLAUDE.md`](../CLAUDE.md).
+
+**Constraints that shape the design:**
+- iOS caps it at **3 prompts per user per 365 days** and may silently decline to
+  show it.
+- **No callback, no return value** — you never learn whether it appeared or what
+  was chosen. So eligibility state is ours to keep (`UserDefaults`: completed
+  brew count, last prompt date).
+- **It must not hang off a button.** An explicit "Rate CoffeeGrams" affordance
+  needs the deep link instead:
+  `https://apps.apple.com/app/id6792577508?action=write-review`.
+- **No incentives** — that's an App Store Review Guidelines violation.
+
+**The trigger, already decided.** The brew log stores a five-star rating per
+brew, so a user saving a **4–5 star brew** is both satisfied and provably
+engaged. Gate on:
+
+1. **3+ completed guided brews**, and
+2. **7+ days since first launch**, and
+3. fired **immediately after saving a brew rated 4–5**.
+
+Never after a paywall dismissal, never mid-brew, never on first launch. Note this
+gates on *engagement* and on satisfaction **with the coffee** — not a sentiment
+survey about the app, which is the pattern Apple discourages.
+
+**Architecture.** Per *Ports & Adapters* in [`../CLAUDE.md`](../CLAUDE.md), the
+prompt is a side effect and so needs a protocol with a live adapter and a test
+double — `ReviewRequesting` alongside the existing seams. The eligibility rule
+belongs in `CoffeeGramsCore` as pure logic so it is testable from the CLI with no
+simulator: given a brew count, a first-launch date, a last-prompt date and a
+star rating, decide yes or no. The `UserDefaults` read/write stays in the app
+layer behind the protocol.
+
+**Rough effort:** well under a session. One pure-logic type plus tests, one
+adapter, one call site in the log-save path.
+
+#### Where this came from
+
+The marketing repo (`Marketting/CoffeeGrams`) researched paid Meta/Instagram ads
+in August 2026 and declined them — see *Paid ads — evaluated and declined* in its
+`MARKETING_PLAN.md`. Two findings pointed here instead: no ad buy moves ratings,
+and Meta install campaigns would have required the Meta SDK, ending "Data Not
+Collected". The rating prompt achieves the goal the ads were meant to serve, for
+free, with no privacy cost.
+
+**MK6** (the marketing measurement milestone, 29–30 Aug 2026) will check whether
+1.2 shipped this and read ratings against the 1-rating baseline of 2026-08-05.
+
 ## 1.3+ — iCloud sync for the brew log
 
 Deferred from M7, and again from 1.1. **Not started** — the only thing in the
@@ -116,7 +198,19 @@ assume).
   at the paywall, consider adding **V60** to the free tier (a one-line change in
   `BrewMethod.isFreeTier`).
 
-## Decided: NO ads (owner decision, 2026-07-19)
+## Decided: NO ads *shown inside the app* (owner decision, 2026-07-19)
+
+> **Two different "no ads" decisions exist. Don't conflate them.**
+>
+> | Decision | Means | Where it lives |
+> |---|---|---|
+> | **NO ads shown inside the app** (this section, 2026-07-19) | We don't *display* ads to our users. No AdMob, no ad SDK, no banners | This file |
+> | **NO paid ads bought to promote the app** (2026-08-05) | We don't *buy* Meta/Instagram or Apple Search Ads to acquire users | Marketing repo, *Paid ads — evaluated and declined* in `MARKETING_PLAN.md` |
+>
+> They reached the same two-word answer for **entirely different reasons** — this
+> one is about the product and the privacy label, the other about unit economics
+> on a $4.99 unlock. Neither implies the other, and satisfying one says nothing
+> about the other.
 
 **We will not put ads in CoffeeGrams.** This is a settled product decision, not a
 "maybe later" — recorded here so it isn't re-litigated.
