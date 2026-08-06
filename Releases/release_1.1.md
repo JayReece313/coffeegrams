@@ -142,10 +142,14 @@ iPad moves to **1.2** and iCloud sync to **1.3+**; both are tracked in
     its job: the tests were green on a design the owner didn't want.
 
 
-## Decided: NO ads
+## Decided: NO ads *shown inside the app*
 
 Unchanged from 1.0 and not up for revisit — see
 [`roadmap_future.md`](roadmap_future.md) for the full reasoning.
+
+Not to be confused with the separate **"don't buy ads to promote the app"**
+decision taken 2026-08-05 in the marketing repo. Different subject, different
+reasoning; `roadmap_future.md` carries a table distinguishing the two.
 
 ## Execution checklist
 
@@ -163,10 +167,22 @@ Unchanged from 1.0 and not up for revisit — see
 - [ ] "What's New" copy for the listing.
 - [ ] **Retake `screenshots/03-guided-timer.png` — required, not optional.** 1.1
       redesigned that screen, so the shot on the listing shows a UI the app no
-      longer has. The other four are unaffected (1.1 stayed iPhone-only and
-      portrait). [`submission_1.1.md`](submission_1.1.md) is the authoritative
-      source for the screenshot rule and the capture/resize steps — follow it
-      rather than this line if the two ever disagree.
+      longer has. `capture.sh` covers this one: `testCaptureGuidedTimer` drives a
+      brew mid-flight so TOTAL reads non-zero.
+      [`submission_1.1.md`](submission_1.1.md) is the authoritative source for
+      the screenshot rule and the capture/resize steps — follow it rather than
+      this line if the two ever disagree.
+      **On the other four:** "1.1 stayed iPhone-only and portrait" is the right
+      reason for `01-home` and `04-paywall`, but **not** for `05-brew-log`, which
+      1.1 *did* touch — it gained an "`m:ss` actual · `m:ss` planned" line per row
+      (`LogView.swift`). That was **considered and deliberately declined on
+      2026-08-03**; the reasoning is in
+      [§3 of the runbook](submission_1.1.md#3-version-page-you) and it
+      still stands. In short: those fields are nil-defaulted for backward
+      compatibility, so pre-1.1 records really do render without the line in the
+      shipped build — the shot is **not inaccurate**, and retaking it would only
+      showcase a What's New item, which is a marketing call rather than a
+      compliance one. Don't re-open it from this line; read §3 first.
 - [ ] Merge → archive → TestFlight → submit (manual release), following
       [`submission_1.1.md`](submission_1.1.md) — a four-step update flow, not the
       eight-step first-submission flow 1.0 needed.

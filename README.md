@@ -197,10 +197,13 @@ These are the cross-file rules that reviewers and Apple keep catching:
 - **Release closeout is done.** The AS-BUILT runbook
   ([`Releases/submission_1.1.md`](Releases/submission_1.1.md)) and the 1.1
   retrospective in the private `Summary` repo are both merged.
-- **1.2 is iPad support**, plus whatever else is in
+- **1.2 is iPad support + the in-app rating prompt**, plus whatever else is in
   [`Releases/roadmap_future.md`](Releases/roadmap_future.md) — iCloud sync and
-  custom app icons are parked there. Two things to clear *before* that release
-  PR:
+  custom app icons are parked there. The rating prompt
+  (`AppStore.requestReview(in:)`, fired after a 4–5 star brew is saved) was
+  decided 2026-08-06 and is fully specified in that file; it's small, and it's
+  the cheapest lever we have on ratings, which sat at **1** on 2026-08-05. Two
+  things to clear *before* that release PR:
   - Fix **Qodo rule 2205425** cloud-side so the false positive stops firing.
   - Split the **`Done`** string key in
     [`CoffeeGrams/CoffeeGrams/Localizable.xcstrings`](CoffeeGrams/CoffeeGrams/Localizable.xcstrings).
