@@ -100,16 +100,29 @@ Apps at **4.5+ convert installs at roughly double** the rate of those under 4.0,
 and rating count feeds search rank — so this is the cheapest lever available on
 both the download goal and the rank problem.
 
-**Use `AppStore.requestReview(in: scene)`** — StoreKit 2, iOS 16+.
-`SKStoreReviewController` is the older spelling and was **deprecated in iOS 18**;
-don't reach for it.
+**Use the SwiftUI `requestReview` environment action** — iOS 16+.
 
 ```swift
-if let scene = UIApplication.shared.connectedScenes
-    .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
-    AppStore.requestReview(in: scene)
-}
+@Environment(\.requestReview) private var requestReview
+// …at the trigger point:
+requestReview()
 ```
+
+`SKStoreReviewController` is the older spelling and was **deprecated in iOS 18**;
+don't reach for it. The UIKit-era replacement is `AppStore.requestReview(in:)`,
+which wants a `UIWindowScene`.
+
+⚠️ **Do not obtain that scene by scanning
+`UIApplication.shared.connectedScenes` for the first `foregroundActive` one.**
+It's the snippet every search result offers, and it is specifically wrong for
+this release: **1.2 is also the iPad release**, so multi-window arrives in the
+same version as the prompt. The "first foreground-active scene" can then be a
+window the user isn't looking at, and mid-transition there may be none at all —
+in which case the prompt silently never appears and we'd have no way to tell,
+because the API reports nothing back. The environment action resolves the scene
+from the view it's called in, so the question doesn't arise. If some non-SwiftUI
+call site ever needs it, take the scene from that view's own
+`window?.windowScene`.
 
 **Privacy label is unaffected.** StoreKit is Apple's own framework, not a
 third-party SDK, so "Data Not Collected" holds — consistent with *Architecture
@@ -139,12 +152,27 @@ gates on *engagement* and on satisfaction **with the coffee** — not a sentimen
 survey about the app, which is the pattern Apple discourages.
 
 **Architecture.** Per *Ports & Adapters* in [`../CLAUDE.md`](../CLAUDE.md), the
-prompt is a side effect and so needs a protocol with a live adapter and a test
-double — `ReviewRequesting` alongside the existing seams. The eligibility rule
-belongs in `CoffeeGramsCore` as pure logic so it is testable from the CLI with no
-simulator: given a brew count, a first-launch date, a last-prompt date and a
-star rating, decide yes or no. The `UserDefaults` read/write stays in the app
-layer behind the protocol.
+prompt is a side effect and needs a protocol with a live adapter and a test
+double — `ReviewRequesting` alongside the existing seams.
+
+Note the environment action is a **View-level** value, so the seam sits slightly
+differently from the other ports: the View reads `@Environment(\.requestReview)`
+and the live adapter closes over it, while the test double records that it was
+asked. The ViewModel depends only on `ReviewRequesting` and stays testable
+without a UI, which is the property that matters.
+
+**The decision must not live in the adapter.** Put the eligibility rule in
+`CoffeeGramsCore` as pure logic so it runs from the CLI with no simulator: given
+a brew count, a first-launch date, a last-prompt date and a star rating, return
+yes or no. That's the part with edge cases worth testing — the 3-per-year cap,
+the 7-day floor, the star threshold. The `UserDefaults` read/write stays in the
+app layer behind the protocol.
+
+Worth stating plainly because the API gives nothing back: **the adapter cannot
+be verified from inside the app.** iOS never reports whether the sheet appeared,
+so tests can only assert that we *asked* under the right conditions. That makes
+the pure-logic gate the only part that's genuinely provable, and the reason it
+belongs in Core rather than inline at the call site.
 
 **Rough effort:** well under a session. One pure-logic type plus tests, one
 adapter, one call site in the log-save path.
