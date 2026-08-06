@@ -100,7 +100,13 @@ Apps at **4.5+ convert installs at roughly double** the rate of those under 4.0,
 and rating count feeds search rank — so this is the cheapest lever available on
 both the download goal and the rank problem.
 
-**Use the SwiftUI `requestReview` environment action** — iOS 16+.
+**Use the SwiftUI `requestReview` environment action.**
+
+The API is available from **iOS 16**, but the app target
+(`com.jrlabapps.CoffeeGrams`) ships at **`IPHONEOS_DEPLOYMENT_TARGET = 17.6`**
+and `CoffeeGramsCore` is `.iOS(.v17)` — so it is unconditionally available to us.
+**Don't wrap the call in `if #available(iOS 16, *)`**; that branch can never be
+false in a shipping build and is dead code.
 
 ```swift
 @Environment(\.requestReview) private var requestReview
@@ -179,9 +185,10 @@ adapter, one call site in the log-save path.
 
 #### Where this came from
 
-The marketing repo (`Marketting/CoffeeGrams`) researched paid Meta/Instagram ads
-in August 2026 and declined them — see *Paid ads — evaluated and declined* in its
-`MARKETING_PLAN.md`. Two findings pointed here instead: no ad buy moves ratings,
+The marketing repo —
+[`JayReece313/coffeegrams-marketing`](https://github.com/JayReece313/coffeegrams-marketing)
+— researched paid Meta/Instagram ads in August 2026 and declined them; see
+*Paid ads — evaluated and declined* in its `MARKETING_PLAN.md`. Two findings pointed here instead: no ad buy moves ratings,
 and Meta install campaigns would have required the Meta SDK, ending "Data Not
 Collected". The rating prompt achieves the goal the ads were meant to serve, for
 free, with no privacy cost.
