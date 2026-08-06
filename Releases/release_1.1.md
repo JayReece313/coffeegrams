@@ -167,10 +167,40 @@ reasoning; `roadmap_future.md` carries a table distinguishing the two.
 - [ ] "What's New" copy for the listing.
 - [ ] **Retake `screenshots/03-guided-timer.png` — required, not optional.** 1.1
       redesigned that screen, so the shot on the listing shows a UI the app no
-      longer has. The other four are unaffected (1.1 stayed iPhone-only and
-      portrait). [`submission_1.1.md`](submission_1.1.md) is the authoritative
-      source for the screenshot rule and the capture/resize steps — follow it
-      rather than this line if the two ever disagree.
+      longer has. `capture.sh` covers this one: `testCaptureGuidedTimer` drives a
+      brew mid-flight so TOTAL reads non-zero.
+      [`submission_1.1.md`](submission_1.1.md) is the authoritative source for
+      the screenshot rule and the capture/resize steps — follow it rather than
+      this line if the two ever disagree.
+- [ ] **Retake `screenshots/05-brew-log.png` — same defect, found 2026-08-06.**
+      An earlier version of this list said "the other four are unaffected". That
+      was wrong. 1.1 added `plannedSeconds` / `actualSeconds`, and
+      `CoffeeGrams/CoffeeGrams/Features/Log/LogView.swift` renders them as a
+      third caption line on **every log row**:
+
+      ```swift
+      return "\(TimeFormat.mmss(actual)) actual · \(TimeFormat.mmss(planned)) planned"
+      ```
+
+      So the live listing shows a brew log the app no longer produces — the same
+      class of drift already caught for the timer. **This one is more work than
+      a re-run**, and the estimate should reflect that:
+      - `ScreenshotCaptureTests.swift` has only **two** capture tests
+        (`testCaptureCalculator`, `testCaptureGuidedTimer`). There is **no**
+        brew-log test; `01`, `04` and `05` all predate the harness and came from
+        the retired in-app `CG_SHOT` switch.
+      - The timing line is `nil`-guarded, so a shot of entries without timing
+        renders **identically to the stale one** — the retake would silently
+        achieve nothing. The capture has to show at least one brew that carries
+        `actualSeconds`.
+      - `CoffeeGramsApp.swift` sets `container = nil` under test, so a UI test
+        has no brew-log store to seed. Either add a seam for a test container or
+        drive a guided brew to completion inside the capture test.
+      - Add a pinned assertion the way the other two have, so this can't drift
+        again unnoticed.
+      Verify `01-home.png` and `04-paywall.png` against the 1.1 build at the same
+      time, since the "unaffected" claim they rested on has now been shown wrong
+      once.
 - [ ] Merge → archive → TestFlight → submit (manual release), following
       [`submission_1.1.md`](submission_1.1.md) — a four-step update flow, not the
       eight-step first-submission flow 1.0 needed.
