@@ -134,7 +134,10 @@ struct CalculatorView: View {
             // https://developer.apple.com/design/human-interface-guidelines/onscreen-keyboards
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button("Done") { doseFieldFocused = false }
+                // Explicit key so this doesn't collide with the guided-brew
+                // "Done" catalog entry — same English text, distinct meaning
+                // and translation context per string.
+                Button(Self.dismissKeypadTitle) { doseFieldFocused = false }
                     .font(.headline)
                     .accessibilityIdentifier("dismissKeypad")
             }
@@ -146,6 +149,15 @@ struct CalculatorView: View {
             BrewSessionView(method: vm.method, doseGrams: vm.effectiveDoseGrams, ratio: vm.ratio)
         }
     }
+
+    /// Own catalog key (`calculator.dismissKeypad.done`) so a translator sees
+    /// this as "the keypad's Done key", not conflated with the guided-brew
+    /// "Done" that ends a whole brew.
+    private static let dismissKeypadTitle = String(
+        localized: "calculator.dismissKeypad.done",
+        defaultValue: "Done",
+        comment: "Keyboard toolbar button that dismisses the decimal keypad on the Coffee dose field."
+    )
 
     /// A consistently styled section header in the muted secondary tone.
     private func sectionHeader(_ title: String) -> some View {

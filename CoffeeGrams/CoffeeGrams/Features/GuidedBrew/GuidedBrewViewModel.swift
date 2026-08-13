@@ -77,9 +77,24 @@ final class GuidedBrewViewModel {
     /// flowing on its own. In practice only the final step holds, so this is
     /// "Done" — the tap that ends the brew. "Next" remains for a hypothetical
     /// mid-timeline manual step, which no current method has.
+    ///
+    /// Own catalog keys (`guidedBrew.finalStep.done` / `guidedBrew.manualStep.next`)
+    /// so "Done" here doesn't collide with the Calculator's keypad-dismiss
+    /// "Done" — same English word, unrelated meaning, needs its own
+    /// translation context.
     var advanceTitle: String? {
         guard isOverrunning || isAwaitingManualAdvance else { return nil }
-        return isOnFinalStep ? "Done" : "Next"
+        return isOnFinalStep
+            ? String(
+                localized: "guidedBrew.finalStep.done",
+                defaultValue: "Done",
+                comment: "Action button on the guided brew's final, holding step; tapping it ends the brew."
+            )
+            : String(
+                localized: "guidedBrew.manualStep.next",
+                defaultValue: "Next",
+                comment: "Action button on a manual, non-final guided brew step; tapping it advances to the next step."
+            )
     }
 
     /// True when the step's own button already ends the brew, so offering a

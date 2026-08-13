@@ -89,15 +89,18 @@ final class CoffeeGramsUITests: XCTestCase {
         XCTAssertTrue(start.waitForExistence(timeout: 10))
         start.tap()
 
-        // Skip through the timed steps until the final step's "Done" appears.
-        // Steps advance on their own, but skipping gets us there in seconds
-        // rather than the full brew time. (1.1 renamed "Skip" to "Skip step".)
+        // Skip through the timed steps until the final step's advance button
+        // appears. Steps advance on their own, but skipping gets us there in
+        // seconds rather than the full brew time. (1.1 renamed "Skip" to
+        // "Skip step".) Query by the stable "guidedBrew.advance" identifier,
+        // not the "Done" title text — that title is now catalog-localized,
+        // so it would break this lookup the day a translation is added.
         for _ in 0..<8 {
-            if app.buttons["Done"].exists { break }
+            if app.buttons["guidedBrew.advance"].exists { break }
             let skip = app.buttons["Skip step"]
             if skip.exists { skip.tap() } else { break }
         }
-        let done = app.buttons["Done"]
+        let done = app.buttons["guidedBrew.advance"]
         if done.waitForExistence(timeout: 3) { done.tap() }
 
         // Save the finished brew.
