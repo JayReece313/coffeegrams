@@ -62,6 +62,12 @@ struct MethodPickerView: View {
 
     // MARK: iPad — sidebar list + detail pane
 
+    // HIG — Split views: "A split view manages the presentation of two or
+    // more content areas... People select an item in one column to reveal
+    // related content in an adjacent column" — the case for keeping the
+    // method list and calculator visible together on iPad, rather than one
+    // replacing the other as on iPhone.
+    // https://developer.apple.com/design/human-interface-guidelines/split-views
     private var splitLayout: some View {
         NavigationSplitView {
             // Its own stack: NavigationSplitView doesn't wrap the sidebar
@@ -85,6 +91,11 @@ struct MethodPickerView: View {
             // own push to BrewSessionView works inside this column, and so
             // switching methods in the sidebar doesn't leave a stale
             // BrewSessionView pushed under the newly chosen calculator.
+            // Only French Press is unlocked pre-purchase, so that reset can't
+            // be exercised today — .id(selectedMethod) forces SwiftUI to
+            // recreate this NavigationStack (discarding any pushed state)
+            // whenever the selection changes, so it's actually there for the
+            // day a Pro user has more than one method to switch between.
             NavigationStack {
                 if let selectedMethod, purchases.canAccess(selectedMethod) {
                     CalculatorView(method: selectedMethod)
@@ -97,6 +108,7 @@ struct MethodPickerView: View {
                     .background(Color.cgBackground.ignoresSafeArea())
                 }
             }
+            .id(selectedMethod)
         }
         // Locked rows are a Button (below), which normally intercepts the tap
         // before the List's own selection fires. This is the defensive
