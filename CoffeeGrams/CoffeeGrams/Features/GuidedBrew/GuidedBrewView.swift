@@ -246,7 +246,12 @@ struct GuidedBrewView: View {
                 // is precisely the ambiguity that rule exists to prevent.
                 // https://developer.apple.com/design/human-interface-guidelines/buttons
                 if let advanceTitle = vm.advanceTitle {
-                    brewButton(advanceTitle) { vm.resolveCurrentStep() }
+                    // Stable identifier, separate from the title: advanceTitle
+                    // is genuinely localized now (Qodo caught this), and an
+                    // accessibility identifier must not shift per locale.
+                    brewButton(advanceTitle, accessibilityIdentifier: "guidedBrew.advance") {
+                        vm.resolveCurrentStep()
+                    }
                 }
 
                 HStack(spacing: 12) {
@@ -277,6 +282,7 @@ struct GuidedBrewView: View {
     private func brewButton(
         _ title: String,
         role: ButtonRole = .primary,
+        accessibilityIdentifier: String? = nil,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -290,7 +296,11 @@ struct GuidedBrewView: View {
             in: RoundedRectangle(cornerRadius: 14)
         )
         .foregroundStyle(role == .primary ? Color.white : Color.cgTextPrimary)
-        .accessibilityIdentifier(title)
+        // Falls back to the title for the other call sites here, which are
+        // still plain English literals (not catalog-localized) and so are
+        // locale-stable in practice. Callers with a genuinely localized
+        // title must pass their own stable identifier — see `advanceTitle`.
+        .accessibilityIdentifier(accessibilityIdentifier ?? title)
     }
 
     private func saveToLog() {
