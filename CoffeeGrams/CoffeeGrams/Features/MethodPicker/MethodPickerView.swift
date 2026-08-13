@@ -75,6 +75,19 @@ struct MethodPickerView: View {
             // below is a push-style NavigationLink that needs one to push
             // LogView within this column.
             NavigationStack {
+                // Qodo review on PR #14 flagged row(for:)'s NavigationLink(value:)
+                // as having no matching .navigationDestination(for: BrewMethod)
+                // registered in this stack, calling it a possible no-op /
+                // runtime-warning risk. Dismissed as a false positive:
+                // NavigationLink(value:) inside a List(selection:) of the
+                // matching type is Apple's own documented NavigationSplitView
+                // sidebar pattern — it drives `selectedMethod` directly rather
+                // than pushing, precisely because no destination is registered
+                // here. Confirmed no SwiftUI runtime diagnostic appears in the
+                // test log, and directly demonstrated by ScreenshotCaptureTests
+                // .testCaptureCalculator, which taps this exact row and
+                // captures the calculator correctly populated in the detail
+                // pane below.
                 List(BrewMethod.allCases, selection: $selectedMethod) { method in
                     row(for: method)
                         .tag(method)

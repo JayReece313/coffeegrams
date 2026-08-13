@@ -82,6 +82,16 @@ fi
 # digits only, so a non-digit capture falls through to the runtime-version
 # tiebreak for every device, silently discarding the model-number comparison.
 #
+# Qodo review on PR #14 flagged these as "hardcoded simulator device names,"
+# citing the CLAUDE.md rule against hardcoding a simulator device. Dismissed
+# as a false positive: these are *regex patterns* resolved dynamically at
+# runtime against whatever's actually installed (see the python block below —
+# it queries `simctl list devices available` and picks the newest match), not
+# a fixed destination. That's exactly what the cited rule asks for ("determine
+# the destination at build time from whatever is installed on the machine...
+# target the latest available"), not the anti-pattern it warns against. The
+# literal model names here are only the *default* filter, and are themselves
+# overridable via CG_SIM_DEVICE, documented above.
 if [ "$PLATFORM" = ipad ]; then
     DEFAULT_DEVICE_PATTERN='iPad Pro 13-inch \(M(\d+)\)'
 else
