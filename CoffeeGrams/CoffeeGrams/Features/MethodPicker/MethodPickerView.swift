@@ -11,9 +11,32 @@ import CoffeeGramsCore
 
 struct MethodPickerView: View {
     @Environment(PurchaseController.self) private var purchases
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var showPaywall = false
+    /// Split-view only: which method is showing in the detail column.
+    @State private var selectedMethod: BrewMethod?
 
     var body: some View {
+        Group {
+            // .regular is iPad (both orientations on every size iPad we
+            // support); .compact is every iPhone. A plain NavigationStack on
+            // iPad left the calculator alone in a mostly-empty 13" screen
+            // after picking a method — the split view keeps the method list
+            // visible alongside it, which is the point of the extra column.
+            if horizontalSizeClass == .regular {
+                splitLayout
+            } else {
+                stackLayout
+            }
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
+    }
+
+    // MARK: iPhone — unchanged from before the iPad pass
+
+    private var stackLayout: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 0) {
                 brandHeader
@@ -33,29 +56,79 @@ struct MethodPickerView: View {
             .navigationDestination(for: BrewMethod.self) { method in
                 CalculatorView(method: method)
             }
-            .toolbar {
-                if !purchases.isPremiumUnlocked {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showPaywall = true
-                        } label: {
-                            Label("Unlock Pro", systemImage: "lock.open")
-                        }
-                        .tint(.cgAccent)
-                    }
+            .toolbar { pickerToolbar }
+        }
+    }
+
+    // MARK: iPad — sidebar list + detail pane
+
+    private var splitLayout: some View {
+        NavigationSplitView {
+            // Its own stack: NavigationSplitView doesn't wrap the sidebar
+            // column in one automatically, and the "Brew log" toolbar item
+            // below is a push-style NavigationLink that needs one to push
+            // LogView within this column.
+            NavigationStack {
+                List(BrewMethod.allCases, selection: $selectedMethod) { method in
+                    row(for: method)
+                        .tag(method)
+                        .listRowBackground(Color.cgSurface)
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink {
-                        LogView()
-                    } label: {
-                        Image(systemName: "list.bullet.rectangle")
-                            .accessibilityLabel("Brew log")
-                    }
+                .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .background(Color.cgBackground.ignoresSafeArea())
+                .navigationTitle("CoffeeGrams")
+                .toolbar { pickerToolbar }
+            }
+        } detail: {
+            // A fresh NavigationStack per detail selection so the calculator's
+            // own push to BrewSessionView works inside this column, and so
+            // switching methods in the sidebar doesn't leave a stale
+            // BrewSessionView pushed under the newly chosen calculator.
+            NavigationStack {
+                if let selectedMethod, purchases.canAccess(selectedMethod) {
+                    CalculatorView(method: selectedMethod)
+                } else {
+                    ContentUnavailableView(
+                        "Choose a brew method",
+                        systemImage: "cup.and.saucer",
+                        description: Text("Pick a method from the list to start.")
+                    )
+                    .background(Color.cgBackground.ignoresSafeArea())
                 }
             }
         }
-        .sheet(isPresented: $showPaywall) {
-            PaywallView()
+        // Locked rows are a Button (below), which normally intercepts the tap
+        // before the List's own selection fires. This is the defensive
+        // fallback in case that ever doesn't hold on some future SwiftUI
+        // change: a locked method must never sit in `selectedMethod` and
+        // silently unlock its calculator.
+        .onChange(of: selectedMethod) { _, newValue in
+            guard let newValue, !purchases.canAccess(newValue) else { return }
+            showPaywall = true
+            selectedMethod = nil
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var pickerToolbar: some ToolbarContent {
+        if !purchases.isPremiumUnlocked {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    showPaywall = true
+                } label: {
+                    Label("Unlock Pro", systemImage: "lock.open")
+                }
+                .tint(.cgAccent)
+            }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            NavigationLink {
+                LogView()
+            } label: {
+                Image(systemName: "list.bullet.rectangle")
+                    .accessibilityLabel("Brew log")
+            }
         }
     }
 
