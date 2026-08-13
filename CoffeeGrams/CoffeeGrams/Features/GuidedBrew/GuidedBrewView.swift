@@ -43,11 +43,23 @@ struct GuidedBrewView: View {
 
             stepList
 
+            // Bounded, not just minLength: on iPhone this Spacer absorbs
+            // whatever's left above the controls, which is small. On a 13"
+            // iPad the leftover is enormous, and an unbounded Spacer would
+            // stretch to fill it, stranding Pause/End Brew far below the step
+            // list. Capping it keeps the gap intentional-looking on any
+            // screen; the block's total height then falls out of its content,
+            // and the trailing frame below centers that block vertically.
             Spacer(minLength: 0)
+                .frame(maxHeight: 60)
 
             controls
         }
         .padding(24)
+        // Caps the column at a comfortable reading width on iPad and centers
+        // it both ways, rather than letting content stretch edge-to-edge on a
+        // 13" screen. A no-op on iPhone, already narrower/shorter than this.
+        .frame(maxWidth: 640)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.cgBackground.ignoresSafeArea())
         .navigationTitle(vm.timeline.method.displayName)

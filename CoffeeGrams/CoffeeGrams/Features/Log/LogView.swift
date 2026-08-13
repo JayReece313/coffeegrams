@@ -34,6 +34,10 @@ struct LogView: View {
                     }
                     .onDelete(perform: delete)
                 }
+                // Caps the list at a comfortable reading width on iPad and
+                // centers it. A no-op on iPhone, already narrower than 640.
+                .frame(maxWidth: 640)
+                .frame(maxWidth: .infinity)
                 .scrollContentBackground(.hidden)
             }
         }

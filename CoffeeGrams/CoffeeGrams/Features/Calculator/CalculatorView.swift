@@ -119,6 +119,11 @@ struct CalculatorView: View {
                 .listRowBackground(Color.clear)
             }
         }
+        // Caps the form at a comfortable reading width on iPad and centers
+        // it, rather than stretching every row edge-to-edge on a 13" screen.
+        // A no-op on iPhone, which is already narrower than 640.
+        .frame(maxWidth: 640)
+        .frame(maxWidth: .infinity)
         .scrollContentBackground(.hidden)
         // Dragging the form down also dismisses the pad — a second, gestural
         // affordance alongside the explicit Done button below.

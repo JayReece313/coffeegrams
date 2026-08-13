@@ -74,6 +74,9 @@ struct LogDetailView: View {
             }
             .listRowBackground(Color.cgSurface)
         }
+        // See CalculatorView: caps the form width on iPad, no-op on iPhone.
+        .frame(maxWidth: 640)
+        .frame(maxWidth: .infinity)
         .scrollContentBackground(.hidden)
         .background(Color.cgBackground.ignoresSafeArea())
         .navigationTitle(record.method.displayName)
