@@ -86,7 +86,21 @@ hit a real judgement call. See *Cost & Context Efficiency* in
 
 ### In-app rating prompt
 
-**Status: not started.** Decided 2026-08-06, out of the marketing repo's paid-ads
+**Status: implemented 2026-08-14, pending merge.** Built as specified below:
+`ReviewPromptEligibility` (pure, `CoffeeGramsCore/ReviewPrompt/`) plus its full
+test suite; `ReviewRequesting`/`LiveReviewRequester`/`NoopReviewRequester` and
+`ReviewPromptState` (`Platform/ReviewPrompt.swift`); wired into
+`LogDetailView`'s rating-set flow, the feature's only call site. The 90-day
+cooldown between our own prompts isn't specified numerically below — that gap
+is documented inline in `ReviewPromptEligibility`'s doc comment along with the
+reasoning. `PrivacyInfo.xcprivacy` gained a `NSPrivacyAccessedAPICategory
+UserDefaults` (reason `CA92.1`) declaration — this is the app's first use of
+UserDefaults. Verified: full Core + app + UI suites on iPhone and iPad, plus a
+one-off manual run against a real `ReviewRequesting` adapter (backdated
+`firstLaunchDate` + 3 seeded brews) confirming the live trigger path doesn't
+crash — the most that's provable, since the API gives no feedback either way.
+
+Decided 2026-08-06, out of the marketing repo's paid-ads
 research (see *Where this came from* below). **Ratings are the lever on App Store
 rank, and we have almost none.**
 
