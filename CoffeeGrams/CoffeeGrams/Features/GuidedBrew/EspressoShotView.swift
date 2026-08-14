@@ -54,7 +54,10 @@ struct EspressoShotView: View {
                 .font(.subheadline)
                 .foregroundStyle(Color.cgTextSecondary)
 
+            // See GuidedBrewView: bounded so this doesn't stretch to fill an
+            // iPad's full leftover height and strand the button far below.
             Spacer(minLength: 0)
+                .frame(maxHeight: 60)
 
             Button(action: { vm.startOrStop() }) {
                 Text(vm.isRunning ? "Stop" : "Start Shot")
@@ -80,6 +83,9 @@ struct EspressoShotView: View {
             }
         }
         .padding(24)
+        // See GuidedBrewView: caps content width on iPad and centers both
+        // ways, no-op on iPhone.
+        .frame(maxWidth: 640)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.cgBackground.ignoresSafeArea())
         .navigationTitle("Espresso")

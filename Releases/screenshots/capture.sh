@@ -4,19 +4,29 @@
 #
 # Drives the real app through XCUITest (CoffeeGramsUITests/ScreenshotCaptureTests
 # .swift), pulls the full-resolution frames out of the result bundle, and fits
-# them to the 1290×2796 upload size. Nothing capture-only is added to the app
-# target, so what you shoot is the build you ship.
+# them to the upload size for the target platform. Nothing capture-only is
+# added to the app target, so what you shoot is the build you ship.
 #
 # Usage, from the repo root:
-#   ./Releases/screenshots/capture.sh                  # all capture tests
-#   ./Releases/screenshots/capture.sh 03-guided-timer  # just one
+#   ./Releases/screenshots/capture.sh                  # all capture tests (iPhone)
+#   ./Releases/screenshots/capture.sh 03-guided-timer  # just one (iPhone)
+#   CG_PLATFORM=ipad ./Releases/screenshots/capture.sh  # all capture tests (iPad)
 #
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."   # repo root, wherever it's called from
 
 WANTED="${1:-}"
-OUT_DIR="Releases/screenshots"
+# iphone (default) or ipad. Each writes to its own subdirectory and its own
+# upload size — Apple treats the two as separate screenshot sets, and an
+# iPad-sized frame in the iPhone slot (or vice versa) gets rejected outright.
+PLATFORM="${CG_PLATFORM:-iphone}"
+case "$PLATFORM" in
+    iphone) OUT_DIR="Releases/screenshots" ;;
+    ipad)   OUT_DIR="Releases/screenshots/ipad" ;;
+    *) echo "CG_PLATFORM must be iphone or ipad, got '$PLATFORM'" >&2; exit 2 ;;
+esac
+mkdir -p "$OUT_DIR"
 WORK="$(mktemp -d)"
 SIM=""
 
@@ -33,10 +43,20 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# The upload size. Current Pro Max simulators capture larger (iPhone 17 Pro Max
-# is 1320×2868) and some ASC uploaders reject that, so we always fit down.
-WIDTH=1290
-HEIGHT=2796
+# The upload size.
+if [ "$PLATFORM" = ipad ]; then
+    # 13" iPad Pro/Air (M-series) — required size per Apple's current
+    # screenshot spec, and exactly what these simulators capture natively (no
+    # fit-down actually changes anything here; sips still runs so a future
+    # simulator with different native pixels doesn't silently upload wrong).
+    WIDTH=2064
+    HEIGHT=2752
+else
+    # Current Pro Max simulators capture larger (iPhone 17 Pro Max is
+    # 1320×2868) and some ASC uploaders reject that, so we always fit down.
+    WIDTH=1290
+    HEIGHT=2796
+fi
 
 # --- Pick the simulator -------------------------------------------------------
 # No device is hardcoded: the newest match is discovered from whatever is
@@ -45,20 +65,39 @@ HEIGHT=2796
 # python3 (ships with Xcode) because `sort -V` isn't dependable on a stock macOS
 # sort.
 #
-# The default *family* is Pro Max, and that part is not arbitrary: 1290×2796 is
-# the canonical 6.9" size, and a device of another family captures a different
-# aspect ratio, which `sips -z` would then squash rather than letting the shot
-# crop. Both are overridable for a machine that has something else installed:
+# The default *family* is Pro Max on iPhone / 13-inch on iPad, and that part
+# is not arbitrary: those are the sizes WIDTH/HEIGHT above assume, and a
+# device of another family captures a different aspect ratio, which `sips -z`
+# would then squash rather than letting the shot crop. Both are overridable
+# for a machine that has something else installed:
 #
-#   CG_SIM_UDID=<udid>                  use exactly this simulator
-#   CG_SIM_DEVICE='iPhone (\d+) Pro'    match a different family
+#   CG_SIM_UDID=<udid>                     use exactly this simulator
+#   CG_SIM_DEVICE='iPhone (\d+) Pro'       match a different iPhone family
+#   CG_SIM_DEVICE='iPad Pro 11-inch \(M(\d+)\)'  match a different iPad family
 #
 # CG_SIM_DEVICE is a python regex matched with fullmatch, so it has to cover the
 # device name end to end — 'iPhone .*Pro' will *not* match "iPhone 17 Pro Max".
-# A capture group around the model number is what makes "newest wins" work;
-# without one, ties fall back to the runtime version.
+# A capture group around just the model *number* (not any letter prefix, e.g.
+# `M(\d+)` not `(M\d+)`) is what makes "newest wins" work — the sort keys on
+# digits only, so a non-digit capture falls through to the runtime-version
+# tiebreak for every device, silently discarding the model-number comparison.
 #
-DEVICE_PATTERN="${CG_SIM_DEVICE:-iPhone (\d+) Pro Max}"
+# Qodo review on PR #14 flagged these as "hardcoded simulator device names,"
+# citing the CLAUDE.md rule against hardcoding a simulator device. Dismissed
+# as a false positive: these are *regex patterns* resolved dynamically at
+# runtime against whatever's actually installed (see the python block below —
+# it queries `simctl list devices available` and picks the newest match), not
+# a fixed destination. That's exactly what the cited rule asks for ("determine
+# the destination at build time from whatever is installed on the machine...
+# target the latest available"), not the anti-pattern it warns against. The
+# literal model names here are only the *default* filter, and are themselves
+# overridable via CG_SIM_DEVICE, documented above.
+if [ "$PLATFORM" = ipad ]; then
+    DEFAULT_DEVICE_PATTERN='iPad Pro 13-inch \(M(\d+)\)'
+else
+    DEFAULT_DEVICE_PATTERN='iPhone (\d+) Pro Max'
+fi
+DEVICE_PATTERN="${CG_SIM_DEVICE:-$DEFAULT_DEVICE_PATTERN}"
 
 if [ -n "${CG_SIM_UDID:-}" ]; then
     SIM="$CG_SIM_UDID"
@@ -87,8 +126,13 @@ fi
 if [ -z "$SIM" ]; then
     echo "no simulator matching /$DEVICE_PATTERN/ is installed." >&2
     echo "Add one in Xcode > Settings > Components, or set CG_SIM_DEVICE / CG_SIM_UDID." >&2
-    echo "Installed iPhones:" >&2
-    xcrun simctl list devices available | grep -E "^\s+iPhone" >&2 || true
+    if [ "$PLATFORM" = ipad ]; then
+        echo "Installed iPads:" >&2
+        xcrun simctl list devices available | grep -E "^\s+iPad" >&2 || true
+    else
+        echo "Installed iPhones:" >&2
+        xcrun simctl list devices available | grep -E "^\s+iPhone" >&2 || true
+    fi
     exit 1
 fi
 echo "▸ simulator $SIM"
@@ -115,9 +159,12 @@ xcrun simctl spawn "$SIM" launchctl setenv CG_CAPTURE 1
 ONLY=(-only-testing:CoffeeGramsUITests/ScreenshotCaptureTests)
 if [ -n "$WANTED" ]; then
     case "$WANTED" in
+        01-home)         ONLY=(-only-testing:CoffeeGramsUITests/ScreenshotCaptureTests/testCaptureHome) ;;
         02-calculator)   ONLY=(-only-testing:CoffeeGramsUITests/ScreenshotCaptureTests/testCaptureCalculator) ;;
         03-guided-timer) ONLY=(-only-testing:CoffeeGramsUITests/ScreenshotCaptureTests/testCaptureGuidedTimer) ;;
-        *) echo "unknown screenshot '$WANTED' (try 02-calculator or 03-guided-timer)" >&2; exit 2 ;;
+        04-paywall)      ONLY=(-only-testing:CoffeeGramsUITests/ScreenshotCaptureTests/testCapturePaywall) ;;
+        05-brew-log)     ONLY=(-only-testing:CoffeeGramsUITests/ScreenshotCaptureTests/testCaptureBrewLog) ;;
+        *) echo "unknown screenshot '$WANTED' (try 01-home, 02-calculator, 03-guided-timer, 04-paywall, 05-brew-log)" >&2; exit 2 ;;
     esac
 fi
 

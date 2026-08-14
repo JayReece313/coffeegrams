@@ -49,6 +49,19 @@ final class ScreenshotCaptureTests: XCTestCase {
         app.launch()
     }
 
+    // MARK: 01 — Home
+
+    /// Just the launch state: branded header (or, on iPad, the split-view
+    /// sidebar + empty detail pane) with the method list and its Pro locks.
+    func testCaptureHome() throws {
+        XCTAssertTrue(app.staticTexts["CoffeeGrams"].waitForExistence(timeout: 10),
+                      "Home should show the CoffeeGrams wordmark")
+        XCTAssertTrue(app.buttons["method_french_press"].exists,
+                      "French Press (the free method) should be listed")
+
+        capture(named: "01-home")
+    }
+
     // MARK: 02 — Calculator
 
     /// French Press at its defaults: 18 g → 270 g at 1:15, and the 1.1 "Set Up
@@ -94,7 +107,81 @@ final class ScreenshotCaptureTests: XCTestCase {
         capture(named: "03-guided-timer")
     }
 
+    // MARK: 04 — Paywall
+
+    /// Espresso is a Pro method; tapping it presents the paywall directly
+    /// (no calculator screen involved for a locked method).
+    func testCapturePaywall() throws {
+        app.buttons["method_espresso"].tap()
+        XCTAssertTrue(app.staticTexts["CoffeeGrams Pro"].waitForExistence(timeout: 10),
+                      "Tapping a locked method should present the Pro paywall")
+
+        capture(named: "04-paywall")
+    }
+
+    // MARK: 05 — Brew log
+
+    /// A single saved brew — enough to show the populated (non-empty) state.
+    /// The current iPhone asset shows several rated, annotated brews; this
+    /// one doesn't script a rating or notes (no accessibility identifiers on
+    /// StarRating yet), so it's a plainer version of the same scene.
+    func testCaptureBrewLog() throws {
+        app.buttons["method_french_press"].tap()
+        let cta = app.buttons["calculatorStartBrew"]
+        XCTAssertTrue(cta.waitForExistence(timeout: 10))
+        cta.tap()
+
+        let start = app.buttons["Start Timer"]
+        XCTAssertTrue(start.waitForExistence(timeout: 10))
+        start.tap()
+
+        for _ in 0..<8 {
+            if app.buttons["guidedBrew.advance"].exists { break }
+            let skip = app.buttons["Skip step"]
+            if skip.exists { skip.tap() } else { break }
+        }
+        let done = app.buttons["guidedBrew.advance"]
+        if done.waitForExistence(timeout: 3) { done.tap() }
+
+        let save = app.buttons["Save to Log"]
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        save.tap()
+
+        openBrewLog()
+
+        // Distinct from a log *row* reading "French Press": the Calculator
+        // screen's own nav title also reads "French Press", so checking for
+        // that text can't tell "opened the log" from "still on Calculator"
+        // apart. The nav bar title and the empty-state check both can.
+        XCTAssertTrue(app.navigationBars["Brew Log"].waitForExistence(timeout: 5),
+                      "Should be on the log screen, not still on Calculator")
+        XCTAssertFalse(app.staticTexts["No brews yet"].waitForExistence(timeout: 2),
+                       "The just-saved brew should make the log non-empty")
+
+        capture(named: "05-brew-log")
+    }
+
     // MARK: Helpers
+
+    private func navigateBack() {
+        let back = app.navigationBars.buttons.element(boundBy: 0)
+        if back.waitForExistence(timeout: 5) { back.tap() }
+    }
+
+    /// See CoffeeGramsUITests.openBrewLog — same fix, duplicated rather than
+    /// shared across these two independent XCTestCase classes: on iPhone,
+    /// "Brew log" only exists on the home screen's toolbar (needs two pops);
+    /// on iPad's split view it's in the always-visible sidebar (needs none).
+    /// A fixed pop count taps the wrong sidebar toolbar button on iPad.
+    private func openBrewLog() {
+        for _ in 0..<3 {
+            if app.buttons["Brew log"].waitForExistence(timeout: 2) { break }
+            navigateBack()
+        }
+        let log = app.buttons["Brew log"]
+        XCTAssertTrue(log.waitForExistence(timeout: 5), "Brew log control should become reachable")
+        log.tap()
+    }
 
     /// Full-device screenshot at native resolution, kept in the result bundle
     /// even though the test passes (the default discards attachments on

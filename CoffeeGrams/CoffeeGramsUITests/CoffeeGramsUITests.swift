@@ -108,18 +108,17 @@ final class CoffeeGramsUITests: XCTestCase {
         XCTAssertTrue(save.waitForExistence(timeout: 5), "A finished brew should offer Save to Log")
         save.tap()
 
-        // Back to home (guided → calculator → home), then open the log.
-        navigateBack()
-        navigateBack()
-        let log = app.buttons["Brew log"]
-        XCTAssertTrue(log.waitForExistence(timeout: 5))
-        log.tap()
+        openBrewLog()
 
-        // The saved French Press brew should be listed (i.e. not the empty state).
+        // The saved French Press brew should be listed (i.e. not the empty
+        // state). Distinct from a log *row* reading "French Press": the
+        // Calculator screen's own nav title also reads "French Press", so
+        // that text alone can't tell "opened the log" from "still on
+        // Calculator" apart — the empty-state check is what actually does.
         XCTAssertFalse(app.staticTexts["No brews yet"].waitForExistence(timeout: 2),
                        "The log should not be empty after saving a brew")
-        XCTAssertTrue(app.staticTexts["French Press"].exists,
-                      "The saved French Press brew should appear in the log")
+        XCTAssertTrue(app.navigationBars["Brew Log"].waitForExistence(timeout: 5),
+                      "Should be on the log screen (its nav bar), not still on Calculator")
     }
 
     // MARK: Helpers
@@ -128,5 +127,25 @@ final class CoffeeGramsUITests: XCTestCase {
     private func navigateBack() {
         let back = app.navigationBars.buttons.element(boundBy: 0)
         if back.waitForExistence(timeout: 5) { back.tap() }
+    }
+
+    /// Reaches and opens the brew log from a mid-brew or finished-brew screen.
+    ///
+    /// On iPhone's NavigationStack, "Brew log" only exists on the home
+    /// screen's toolbar, so this needs two pops (guided brew → calculator →
+    /// home). On iPad's NavigationSplitView, the button lives in the
+    /// always-visible sidebar toolbar, so no pop is needed at all — a fixed
+    /// `navigateBack() × 2` doesn't know that, and its second call taps
+    /// `navigationBars.buttons.element(boundBy: 0)` blindly, which on iPad
+    /// hits whatever sidebar toolbar button is first (e.g. "Unlock Pro"),
+    /// not a real back chevron, silently misnavigating.
+    private func openBrewLog() {
+        for _ in 0..<3 {
+            if app.buttons["Brew log"].waitForExistence(timeout: 2) { break }
+            navigateBack()
+        }
+        let log = app.buttons["Brew log"]
+        XCTAssertTrue(log.waitForExistence(timeout: 5), "Brew log control should become reachable")
+        log.tap()
     }
 }

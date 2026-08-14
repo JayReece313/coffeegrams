@@ -42,6 +42,10 @@ struct PaywallView: View {
                         .multilineTextAlignment(.center)
                 }
                 .padding(24)
+                // Caps the benefits column at a comfortable reading width on
+                // iPad and centers it. A no-op on iPhone, already narrower.
+                .frame(maxWidth: 640)
+                .frame(maxWidth: .infinity)
             }
             .background(Color.cgBackground.ignoresSafeArea())
             .toolbar {

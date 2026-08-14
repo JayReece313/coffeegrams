@@ -1,4 +1,6 @@
-# App Store screenshots — v1.1
+# App Store screenshots — v1.1 (iPhone), v1.2 (+ iPad)
+
+## iPhone — `Releases/screenshots/`
 
 Ready to upload to App Store Connect at **1290 × 2796** (the canonical 6.9"
 display size — iPhone 16 Pro Max) with a clean 9:41 status bar. (Captured at
@@ -18,45 +20,75 @@ uploaders reject the newer 1320 × 2868.)
 **Note:** these are raw device frames (no marketing text overlays), which Apple
 accepts. Screenshot #4 (paywall) also works as the review screenshot for the IAP.
 
+## iPad — `Releases/screenshots/ipad/`
+
+Added for 1.2. Ready to upload at **2064 × 2752** — the *required* 13" size
+per Apple's current spec (iPad Pro / Air, M-series), and what these
+simulators capture natively (no fit-down actually changes anything, `sips`
+just verifies). The optional legacy 12.9" (2048×2732) slot is skipped —
+per Apple's docs, ASC scales the 13" set down for it automatically.
+
+| # | File | Screen |
+|---|------|--------|
+| 1 | `01-home.png` | Home — sidebar method list + empty detail pane (`NavigationSplitView`) |
+| 2 | `02-calculator.png` | Calculator for French Press, shown in the detail pane |
+| 3 | `03-guided-timer.png` | Guided brew running, detail pane |
+| 4 | `04-paywall.png` | CoffeeGrams Pro paywall |
+| 5 | `05-brew-log.png` | Brew log — **one unrated, unannotated entry**, not the richer multi-entry iPhone shot (see *Currently scripted* below) |
+
 ## Regenerating
 
 ```sh
-./capture.sh                  # from anywhere; both scripted shots
-./capture.sh 03-guided-timer  # just one
+./capture.sh                       # iPhone, all five shots
+./capture.sh 03-guided-timer       # iPhone, just one
+CG_PLATFORM=ipad ./capture.sh      # iPad, all five shots
+CG_PLATFORM=ipad ./capture.sh 05-brew-log   # iPad, just one
 ```
 
-`capture.sh` discovers the newest installed iPhone Pro Max simulator by UDID,
+`capture.sh` discovers the newest installed simulator by UDID for the target
+platform (iPhone Pro Max, or — with `CG_PLATFORM=ipad` — 13" iPad Pro/Air),
 pins the status bar to 9:41, builds **Release**, drives the real app via
 `CoffeeGramsUITests/ScreenshotCaptureTests.swift`, pulls the frames out of the
-result bundle, fits them to 1290×2796 and writes them straight over the tracked
-files here. It clears the status-bar override on the way out, including when it
-fails.
+result bundle, fits them to the platform's upload size, and writes them
+straight over the tracked files in `Releases/screenshots/` (iPhone) or
+`Releases/screenshots/ipad/` (iPad). It clears the status-bar override on the
+way out, including when it fails.
 
-No device name is baked in, but the default family is Pro Max on purpose:
-1290×2796 is the canonical 6.9" size, and another family captures a different
-aspect ratio that the fit-down would squash. Override if your machine has
-something else installed:
+No device name is baked in, but the default family is Pro Max / 13" on
+purpose: those are the sizes the script fits to, and another family captures
+a different aspect ratio that the fit-down would squash. Override if your
+machine has something else installed:
 
 ```sh
-CG_SIM_UDID=<udid>               ./capture.sh   # this exact simulator
-CG_SIM_DEVICE='iPhone (\d+) Pro' ./capture.sh   # a different family
+CG_SIM_UDID=<udid>                            ./capture.sh   # this exact simulator
+CG_SIM_DEVICE='iPhone (\d+) Pro'              ./capture.sh   # a different iPhone family
+CG_SIM_DEVICE='iPad Pro 11-inch \(M(\d+)\)'   CG_PLATFORM=ipad ./capture.sh   # a different iPad family
 ```
 
 `CG_SIM_DEVICE` is a python regex matched with `fullmatch`, so it has to cover
 the device name end to end — `'iPhone .*Pro'` will *not* match "iPhone 17 Pro
-Max". The capture group around the model number is what picks the newest.
+Max". The capture group around *just the model number* (not any letter
+prefix — `M(\d+)`, not `(M\d+)`) is what picks the newest; a non-digit capture
+falls through to the runtime-version tiebreak instead.
 
-The tests' *assertions* run in every suite — they pin the 1.1 UI strings so the
+The tests' *assertions* run in every suite — they pin UI strings so the
 listing can't silently drift from the build again — but the *shutter* only fires
 when `CG_CAPTURE=1` is in the simulator's environment, which `capture.sh` sets.
 A normal `xcodebuild test` therefore takes no screenshots, keeps no attachments
 and skips the wait for the clock to advance.
 
-**Currently scripted:** `02-calculator`, `03-guided-timer`.
-**Still manual:** `01-home`, `04-paywall`, `05-brew-log` — `05` needs a
-populated log and `04` a purchase sheet, neither of which the UI tests set up
-yet. Add a test to `ScreenshotCaptureTests` when one of them next needs a
-refresh.
+**Currently scripted (all five):** `01-home`, `02-calculator`,
+`03-guided-timer`, `04-paywall`, `05-brew-log` — the last three added for the
+1.2 iPad pass. **The tracked iPhone `01-home.png`/`04-paywall.png` weren't
+regenerated by the new tests** (they'd very likely come out identical, but
+this hasn't been re-verified) — only `05-brew-log.png` is a real,
+already-known behavior change if rerun on iPhone: the new
+`testCaptureBrewLog` saves one plain, unrated brew, plainer than the current
+tracked shot's several rated, annotated ones (`StarRating` has no
+accessibility identifiers yet to script a rating tap). **Don't run
+`./capture.sh 05-brew-log` or a full `./capture.sh` on iPhone without meaning
+to downgrade that asset** — the iPad version under `ipad/` used the plain
+version because there was nothing to downgrade there.
 
 *History:* the 1.0 set came from a temporary `CG_SHOT` switch inside the **app**
 target that was added for a capture and deleted afterwards. That approach is
