@@ -40,7 +40,7 @@ struct CoffeeGramsApp: App {
             // Starts the rating prompt's 7-day eligibility clock from the
             // true first launch — a no-op after the first time. Not during
             // tests, matching DiagnosticsService above.
-            ReviewPromptState().stampFirstLaunchIfNeeded()
+            UserDefaultsReviewPromptState().stampFirstLaunchIfNeeded()
         }
     }
 

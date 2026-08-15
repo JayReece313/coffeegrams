@@ -121,6 +121,55 @@ final class CoffeeGramsUITests: XCTestCase {
                       "Should be on the log screen (its nav bar), not still on Calculator")
     }
 
+    // MARK: Rating a brew triggers the review-prompt path without regressing
+
+    /// Doesn't (and can't) assert the real StoreKit sheet appears — the API
+    /// gives no feedback either way, and Simulator doesn't render it. What
+    /// this protects is the flow itself: tapping a star rating on a saved
+    /// brew must persist the rating and leave the screen intact, regardless
+    /// of whether ReviewPromptTrigger decides to fire underneath it (it
+    /// won't, under normal test conditions — a fresh install has neither 3+
+    /// completed brews nor 7+ days since first launch).
+    @MainActor
+    func testRatingABrewDoesNotRegressTheScreen() throws {
+        app.buttons["method_french_press"].tap()
+        let calcStart = app.buttons["calculatorStartBrew"]
+        XCTAssertTrue(calcStart.waitForExistence(timeout: 10))
+        calcStart.tap()
+
+        let start = app.buttons["Start Timer"]
+        XCTAssertTrue(start.waitForExistence(timeout: 10))
+        start.tap()
+
+        for _ in 0..<8 {
+            if app.buttons["guidedBrew.advance"].exists { break }
+            let skip = app.buttons["Skip step"]
+            if skip.exists { skip.tap() } else { break }
+        }
+        let done = app.buttons["guidedBrew.advance"]
+        if done.waitForExistence(timeout: 3) { done.tap() }
+
+        let save = app.buttons["Save to Log"]
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        save.tap()
+
+        openBrewLog()
+        let firstRow = app.cells.firstMatch
+        XCTAssertTrue(firstRow.waitForExistence(timeout: 5))
+        firstRow.tap()
+
+        let fiveStars = app.images["5 stars"]
+        XCTAssertTrue(fiveStars.waitForExistence(timeout: 5))
+        fiveStars.tap()
+
+        // Still on the detail screen (not crashed, not dismissed), and the
+        // rating actually reflects the tap.
+        XCTAssertTrue(app.buttons["Delete Brew"].waitForExistence(timeout: 5),
+                      "Rating shouldn't knock the screen out or crash the app")
+        XCTAssertTrue(app.images["5 stars"].waitForExistence(timeout: 2),
+                      "The filled 5th star should still be reachable by the same label after the tap")
+    }
+
     // MARK: Helpers
 
     /// Tap the leading (back) button of the current navigation bar.

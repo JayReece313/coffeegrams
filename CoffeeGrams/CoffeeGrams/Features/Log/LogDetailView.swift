@@ -18,14 +18,11 @@ struct LogDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
-    /// Read here (a View), not in the ViewModel layer this screen doesn't
-    /// have — the action resolves its own window scene from the view it was
-    /// read in. See ReviewPrompt.swift.
+    /// Read here (a View): `@Environment` only resolves once a View is in
+    /// the hierarchy, which is also why `ReviewPromptTrigger.handleRatingChange`
+    /// takes this as a parameter rather than a ViewModel holding it. See
+    /// ReviewPrompt.swift.
     @Environment(\.requestReview) private var requestReview
-
-    /// Every saved brew, to know the completed-brew count the rating-prompt
-    /// eligibility check needs — the log itself is that count.
-    @Query private var allRecords: [BrewLogRecord]
 
     /// A local draft so notes persist once (when leaving the screen), not on
     /// every keystroke.
@@ -104,34 +101,26 @@ struct LogDetailView: View {
     /// Route writes through the store rather than persisting from the view.
     private var store: BrewLogStore { BrewLogStore(context: modelContext) }
 
-    /// 0 = unrated; stored as nil.
+    /// 0 = unrated; stored as nil. The only decision this makes is "which
+    /// value did the user pick" — persisting it, and the rating-prompt
+    /// eligibility check that follows, both live in ReviewPromptTrigger
+    /// (roadmap: "fired immediately after saving a brew rated 4–5"). Never
+    /// fires from a paywall dismissal or mid-brew, because rating only
+    /// happens here, after a brew is already saved to the log.
     private var ratingBinding: Binding<Int> {
         Binding(
             get: { record.rating ?? 0 },
             set: { newValue in
-                try? store.setRating(newValue == 0 ? nil : newValue, forID: record.id)
-                maybeRequestReview(afterRating: newValue)
+                ReviewPromptTrigger.handleRatingChange(
+                    newValue,
+                    forRecordID: record.id,
+                    store: store,
+                    promptState: UserDefaultsReviewPromptState(),
+                    clock: SystemWallClock(),
+                    reviewRequester: LiveReviewRequester(action: requestReview)
+                )
             }
         )
-    }
-
-    /// The rating prompt's only call site (roadmap: "fired immediately after
-    /// saving a brew rated 4–5"). Never fires from a paywall dismissal or
-    /// mid-brew, because rating only happens here, after a brew is already
-    /// saved to the log.
-    private func maybeRequestReview(afterRating rating: Int) {
-        let state = ReviewPromptState()
-        guard let firstLaunchDate = state.firstLaunchDate else { return }
-        let eligible = ReviewPromptEligibility.shouldRequest(
-            completedBrewCount: allRecords.count,
-            firstLaunchDate: firstLaunchDate,
-            lastPromptDate: state.lastPromptDate,
-            rating: rating,
-            now: Date()
-        )
-        guard eligible else { return }
-        LiveReviewRequester(action: requestReview).requestReview()
-        state.lastPromptDate = Date()
     }
 
     /// Persist the notes draft once, trimmed, when leaving the screen.

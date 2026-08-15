@@ -50,6 +50,88 @@ final class SpyNotificationService: NotificationScheduling {
     }
 }
 
+/// A controllable stand-in for wall-clock time, so `ReviewPromptTrigger`
+/// tests don't depend on when they happen to run.
+struct FakeWallClock: WallClock {
+    var now: Date
+}
+
+/// In-memory test double for the rating-prompt's UserDefaults-backed state —
+/// no real UserDefaults, no persistence across runs.
+final class InMemoryReviewPromptState: ReviewPromptStateStoring {
+    var firstLaunchDate: Date?
+    var lastPromptDate: Date?
+
+    init(firstLaunchDate: Date? = nil, lastPromptDate: Date? = nil) {
+        self.firstLaunchDate = firstLaunchDate
+        self.lastPromptDate = lastPromptDate
+    }
+}
+
+/// A spy that records whether it was asked, for tests that can't observe the
+/// real StoreKit sheet.
+final class SpyReviewRequester: ReviewRequesting {
+    private(set) var requestCount = 0
+
+    func requestReview() {
+        requestCount += 1
+    }
+}
+
+enum BrewLogStoreTestError: Error { case notFound }
+
+/// An in-memory stand-in for `BrewLogStoring`, so `ReviewPromptTrigger` tests
+/// don't need a real SwiftData `ModelContext` (which also can't coexist with
+/// other tests' containers in the same process — see BrewLogStoreTests).
+@MainActor
+final class FakeBrewLogStore: BrewLogStoring {
+    private(set) var entriesByID: [UUID: BrewLogEntry] = [:]
+    var throwOnSetRating = false
+
+    init(entries: [BrewLogEntry] = []) {
+        for entry in entries { entriesByID[entry.id] = entry }
+    }
+
+    func add(_ entry: BrewLogEntry) throws {
+        entriesByID[entry.id] = entry
+    }
+
+    func entries() throws -> [BrewLogEntry] {
+        Array(entriesByID.values)
+    }
+
+    func delete(id: UUID) throws {
+        entriesByID.removeValue(forKey: id)
+    }
+
+    func setRating(_ rating: Int?, forID id: UUID) throws {
+        if throwOnSetRating { throw BrewLogStoreTestError.notFound }
+        guard var entry = entriesByID[id] else { throw BrewLogStoreTestError.notFound }
+        entry = BrewLogEntry(
+            id: entry.id, date: entry.date, method: entry.method,
+            doseGrams: entry.doseGrams, waterGrams: entry.waterGrams, ratio: entry.ratio,
+            shotSeconds: entry.shotSeconds, plannedSeconds: entry.plannedSeconds,
+            actualSeconds: entry.actualSeconds, rating: rating, notes: entry.notes
+        )
+        entriesByID[id] = entry
+    }
+
+    func setNotes(_ notes: String?, forID id: UUID) throws {
+        guard var entry = entriesByID[id] else { throw BrewLogStoreTestError.notFound }
+        entry = BrewLogEntry(
+            id: entry.id, date: entry.date, method: entry.method,
+            doseGrams: entry.doseGrams, waterGrams: entry.waterGrams, ratio: entry.ratio,
+            shotSeconds: entry.shotSeconds, plannedSeconds: entry.plannedSeconds,
+            actualSeconds: entry.actualSeconds, rating: entry.rating, notes: notes
+        )
+        entriesByID[id] = entry
+    }
+
+    func completedBrewCount() throws -> Int {
+        entriesByID.count
+    }
+}
+
 enum PurchaseTestError: Error { case failed }
 
 /// A controllable stand-in for StoreKit so purchase/gating flows are testable.
