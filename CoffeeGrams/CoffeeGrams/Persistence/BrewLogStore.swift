@@ -20,6 +20,10 @@ protocol BrewLogStoring {
     func delete(id: UUID) throws
     func setRating(_ rating: Int?, forID id: UUID) throws
     func setNotes(_ notes: String?, forID id: UUID) throws
+    /// Total saved brews. A count-only fetch — callers that only need the
+    /// number (e.g. the review-prompt eligibility check) shouldn't have to
+    /// materialize and map every record via `entries()` to get it.
+    func completedBrewCount() throws -> Int
 }
 
 @MainActor
@@ -62,6 +66,10 @@ final class BrewLogStore: BrewLogStoring {
             record.notes = notes
             try context.save()
         }
+    }
+
+    func completedBrewCount() throws -> Int {
+        try context.fetchCount(FetchDescriptor<BrewLogRecord>())
     }
 
     // MARK: Helpers

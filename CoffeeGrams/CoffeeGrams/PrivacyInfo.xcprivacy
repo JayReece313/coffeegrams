@@ -26,6 +26,18 @@
 				<string>35F9.1</string>
 			</array>
 		</dict>
+		<dict>
+			<!-- ReviewPromptState (Platform/ReviewPrompt.swift): first-launch
+			     date and last-rating-prompt date, read/written only by this
+			     app, for the in-app rating prompt's eligibility gate. No App
+			     Group, nothing shared with an extension. -->
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

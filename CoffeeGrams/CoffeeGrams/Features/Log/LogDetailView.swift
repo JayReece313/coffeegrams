@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import StoreKit
 import CoffeeGramsCore
 
 struct LogDetailView: View {
@@ -17,6 +18,11 @@ struct LogDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
+    /// Read here (a View): `@Environment` only resolves once a View is in
+    /// the hierarchy, which is also why `ReviewPromptTrigger.handleRatingChange`
+    /// takes this as a parameter rather than a ViewModel holding it. See
+    /// ReviewPrompt.swift.
+    @Environment(\.requestReview) private var requestReview
 
     /// A local draft so notes persist once (when leaving the screen), not on
     /// every keystroke.
@@ -95,11 +101,25 @@ struct LogDetailView: View {
     /// Route writes through the store rather than persisting from the view.
     private var store: BrewLogStore { BrewLogStore(context: modelContext) }
 
-    /// 0 = unrated; stored as nil.
+    /// 0 = unrated; stored as nil. The only decision this makes is "which
+    /// value did the user pick" — persisting it, and the rating-prompt
+    /// eligibility check that follows, both live in ReviewPromptTrigger
+    /// (roadmap: "fired immediately after saving a brew rated 4–5"). Never
+    /// fires from a paywall dismissal or mid-brew, because rating only
+    /// happens here, after a brew is already saved to the log.
     private var ratingBinding: Binding<Int> {
         Binding(
             get: { record.rating ?? 0 },
-            set: { try? store.setRating($0 == 0 ? nil : $0, forID: record.id) }
+            set: { newValue in
+                ReviewPromptTrigger.handleRatingChange(
+                    newValue,
+                    forRecordID: record.id,
+                    store: store,
+                    promptState: UserDefaultsReviewPromptState(),
+                    clock: SystemWallClock(),
+                    reviewRequester: LiveReviewRequester(action: requestReview)
+                )
+            }
         )
     }
 

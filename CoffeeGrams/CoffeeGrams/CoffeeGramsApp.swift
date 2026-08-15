@@ -37,6 +37,10 @@ struct CoffeeGramsApp: App {
             }
             // On-device crash/metrics capture (no network). Not during tests.
             DiagnosticsService.shared.start()
+            // Starts the rating prompt's 7-day eligibility clock from the
+            // true first launch — a no-op after the first time. Not during
+            // tests, matching DiagnosticsService above.
+            UserDefaultsReviewPromptState().stampFirstLaunchIfNeeded()
         }
     }
 

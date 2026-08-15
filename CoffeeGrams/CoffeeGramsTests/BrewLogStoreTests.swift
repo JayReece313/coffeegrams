@@ -125,5 +125,18 @@ extension AppTests {
             #expect(saved.rating == 4)
             #expect(saved.notes == "Bright, juicy")
         }
+
+        @Test("completedBrewCount matches the number of saved entries", .swiftDataIntegration)
+        func completedBrewCount() throws {
+            let store = try makeStore()
+            #expect(try store.completedBrewCount() == 0)
+
+            try store.add(entry(method: .v60))
+            try store.add(entry(method: .chemex))
+            try store.add(entry(method: .frenchPress))
+
+            #expect(try store.completedBrewCount() == 3)
+            #expect(try store.completedBrewCount() == store.entries().count)
+        }
     }
 }
