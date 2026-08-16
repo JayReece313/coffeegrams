@@ -86,7 +86,9 @@ hit a real judgement call. See *Cost & Context Efficiency* in
 
 ### In-app rating prompt
 
-**Status: implemented 2026-08-14, pending merge.** Built as specified below:
+**Status: shipped 2026-08-15** (merged via PR #15, plus a follow-up PR
+extracting the eligibility check out of the View into a testable
+`ReviewPromptTrigger` after a Qodo review). Built as specified below:
 `ReviewPromptEligibility` (pure, `CoffeeGramsCore/ReviewPrompt/`) plus its full
 test suite; `ReviewRequesting`/`LiveReviewRequester`/`NoopReviewRequester` and
 `ReviewPromptState` (`Platform/ReviewPrompt.swift`); wired into
