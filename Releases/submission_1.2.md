@@ -122,10 +122,13 @@ setting, not a signing concern).
       code (not assumed from the 1.1 notes — this project has shipped a
       screenshot miss before): `01-home.png`, `02-calculator.png`,
       `03-guided-timer.png`, and `04-paywall.png` were all recaptured fresh
-      and visually confirmed unchanged (iPad support and the rating prompt
-      are both no-ops on iPhone's visible UI). `05-brew-log.png` stays as
-      the existing asset, same reasoning 1.1 already recorded — the log
-      screen didn't meaningfully change again. Nothing here needs
+      via `capture.sh` (iPad support and the rating prompt are both no-ops
+      on iPhone's visible UI, so no change was expected). `02-calculator.png`
+      came back **byte-identical** to the already-tracked file — that's why
+      it doesn't show up in this PR's diff alongside the other three; it was
+      genuinely re-captured and confirmed, not skipped. `05-brew-log.png`
+      stays as the existing asset, same reasoning 1.1 already recorded — the
+      log screen didn't meaningfully change again. Nothing here needs
       recapturing before upload; these are current.
 - [ ] **[you]** ⚠️ **iPad screenshots — a new set, uploaded for the first
       time. Get the slot right.** In *App Previews and Screenshots*, use

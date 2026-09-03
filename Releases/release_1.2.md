@@ -130,8 +130,13 @@ Unchanged from 1.0/1.1 and not up for revisit — see
 - [ ] "What's New" copy for the listing (draft below).
 - [ ] iPhone screenshots re-verified against the shipped 1.2 build (audited
       2026-09-01 — `01-home`, `02-calculator`, `03-guided-timer`,
-      `04-paywall` recaptured and visually confirmed unchanged;
-      `05-brew-log` deliberately left as-is, same reasoning as 1.1).
+      `04-paywall` all recaptured via `capture.sh` and visually confirmed
+      unchanged. `02-calculator` came back **byte-identical** to the
+      already-tracked file — the strongest possible confirmation, not a
+      skip — which is why it doesn't appear in this PR's diff; the other
+      three differ only in PNG encoding bytes from a fresh capture run, not
+      in content. `05-brew-log` deliberately left as-is, same reasoning as
+      1.1).
 - [ ] iPad screenshots uploaded to the **13" Display** slot in ASC (not the
       legacy 12.9" slot) — see [`submission_1.2.md`](submission_1.2.md).
 - [ ] Merge → archive → TestFlight → submit (manual release), following
