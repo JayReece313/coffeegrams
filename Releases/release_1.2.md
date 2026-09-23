@@ -128,7 +128,7 @@ Unchanged from 1.0/1.1 and not up for revisit — see
       and iPad, Debug/Release warning-free.
 - [x] `MARKETING_VERSION` bumped to 1.2, `CURRENT_PROJECT_VERSION` to 3.
 - [ ] "What's New" copy for the listing (draft below).
-- [ ] iPhone screenshots re-verified against the shipped 1.2 build (audited
+- [x] iPhone screenshots re-verified against the shipped 1.2 build (audited
       2026-09-01 — `01-home`, `02-calculator`, `03-guided-timer`,
       `04-paywall` all recaptured via `capture.sh` and visually confirmed
       unchanged. `02-calculator` came back **byte-identical** to the

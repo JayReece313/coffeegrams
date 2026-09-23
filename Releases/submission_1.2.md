@@ -59,11 +59,16 @@ repeating:
       usual `appintentsmetadataprocessor` "no AppIntents.framework" info
       note, not a compiler warning). **Re-run once this branch is merged to
       `main`** — nothing should differ, but that's what "re-run" means, not
-      "assume":
+      "assume". Both destinations, not just iPhone: this is the iPad
+      release, so a merge-introduced regression that only shows up on iPad
+      (the split-view path, the width/height-capped layouts) needs the same
+      re-run discipline as anything iPhone-visible:
       ```sh
       (cd CoffeeGramsCore && swift test)
       (cd CoffeeGrams && COFFEEGRAMS_SWIFTDATA_TESTS=1 xcodebuild test -scheme CoffeeGrams \
          -destination 'platform=iOS Simulator,name=<latest available iPhone>')
+      (cd CoffeeGrams && COFFEEGRAMS_SWIFTDATA_TESTS=1 xcodebuild test -scheme CoffeeGrams \
+         -destination 'platform=iOS Simulator,name=<latest available iPad>')
       (cd CoffeeGrams && xcodebuild build -scheme CoffeeGrams -configuration Release \
          -destination 'generic/platform=iOS Simulator')
       ```
