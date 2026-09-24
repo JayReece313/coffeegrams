@@ -1,5 +1,7 @@
 # CoffeeGrams — Release 1.2
 
+**Status: 🟢 LIVE on the App Store 2026-09-24.**
+
 **Scope: iPad support + an in-app App Store rating prompt.** Both pieces of
 work `roadmap_future.md` scoped for 1.2 back when 1.1 shipped.
 `MARKETING_VERSION = 1.2`, build `3`.
@@ -127,7 +129,7 @@ Unchanged from 1.0/1.1 and not up for revisit — see
 - [x] All suites green (Core 61, app unit, `CoffeeGramsUITests`) + iPhone
       and iPad, Debug/Release warning-free.
 - [x] `MARKETING_VERSION` bumped to 1.2, `CURRENT_PROJECT_VERSION` to 3.
-- [ ] "What's New" copy for the listing (draft below).
+- [x] "What's New" copy for the listing (below — used as submitted).
 - [x] iPhone screenshots re-verified against the shipped 1.2 build (audited
       2026-09-01 — `01-home`, `02-calculator`, `03-guided-timer`,
       `04-paywall` all recaptured via `capture.sh` and visually confirmed
@@ -137,9 +139,11 @@ Unchanged from 1.0/1.1 and not up for revisit — see
       three differ only in PNG encoding bytes from a fresh capture run, not
       in content. `05-brew-log` deliberately left as-is, same reasoning as
       1.1).
-- [ ] iPad screenshots uploaded to the **13" Display** slot in ASC (not the
+- [x] iPad screenshots uploaded to the **13" Display** slot in ASC (not the
       legacy 12.9" slot) — see [`submission_1.2.md`](submission_1.2.md).
-- [ ] Merge → archive → TestFlight → submit (manual release), following
+- [x] Merge → archive → TestFlight → submit (manual release) — **LIVE
+      2026-09-24**. Submitted 2026-09-23, approved 2026-09-24 (1-day
+      turnaround), released the same day. Full as-built record in
       [`submission_1.2.md`](submission_1.2.md).
 
 ## What's New (draft copy)
