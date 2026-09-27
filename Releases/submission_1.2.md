@@ -146,9 +146,15 @@ buried in a later `git status`. Filed as its own fix (see the fix commit
 alongside this update, restoring the four flags and writing real comments
 for the two new keys).
 
-*(Fill in any screenshot-slot experience here once confirmed — the previous
-draft flagged the 13" vs. 12.9" ASC slot as this release's specific new-
-territory risk.)*
+### The 13" screenshot slot — no repeat this time
+
+Both screenshot sets — iPhone (existing 6.9" slot) and the new iPad 13"
+slot — went smoothly. The device-size selector made the 13" slot easy to
+find deliberately, rather than needing to be picked out from a default the
+page happened to show. The new-territory risk this section flagged
+(picking 13" vs. the legacy 12.9" slot, on top of this project's two prior
+screenshot-slot mistakes in 1.1) did not materialize. First clean iPad
+screenshot upload for this app.
 
 ### What went exactly to plan
 
@@ -194,8 +200,10 @@ CoffeeGrams now runs great on iPad.
   into an unrelated commit.
 - **Screenshot slot discipline** — pick the ASC device-size slot by the
   selector, never by whichever one the page shows first. Now proven across
-  three releases (1.1's 6.5"/6.9" mixup, this release's near-miss during
-  research, and — fill in — how the actual upload went).
+  three releases: 1.1's 6.5"/6.9" mixup, this release's near-miss during
+  research, and this release's actual upload (both iPhone and the new iPad
+  13" slot), which went cleanly. First release where this habit paid off
+  rather than caught a mistake after the fact.
 - **Archiving from `main` after merge**, checking TestFlight before
   archiving, one item in the Review Submission, not re-answering App
   Privacy — all continue to hold.
