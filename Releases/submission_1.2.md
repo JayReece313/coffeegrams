@@ -100,9 +100,12 @@ Everything 1.1 already established held, unchanged:
 - [x] **Released 2026-09-24** — clicked **Release This Version** the same
       day it was approved.
 - [x] **[you]** Updated to **AS-BUILT** (this revision).
-- [ ] **[you]** Per the Retrospective Standard, add the 1.2 notes to
-      `CoffeeGrams_Summary.md` in the private `Summary` repo, including the
-      **AI-agent process review** checkpoint. *(Still open — see below.)*
+- [x] **[you]** Per the Retrospective Standard, added the 1.2 notes to
+      `CoffeeGrams_Summary.md` in the private `Summary` repo (§9), including
+      the **AI-agent process review** checkpoint, plus a synced copy of
+      `ARCHITECTURE.md` (which was itself brought current for 1.1 and 1.2 as
+      part of this — it hadn't been touched since 1.0). This closes out the
+      1.2 release in full.
 
 ---
 
