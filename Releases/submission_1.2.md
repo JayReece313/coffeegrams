@@ -1,11 +1,12 @@
-# CoffeeGrams — v1.2 App Store Submission Runbook
+# CoffeeGrams — v1.2 App Store Submission Runbook (AS-BUILT)
 
-> **Status: 🟡 not yet submitted.** This is a plan, not an as-built record —
-> unlike `submission_1.1.md`, which was written after the fact. Steps marked
-> **[me]** are done as of this draft; everything marked **[you]** is a real
-> App Store Connect / Xcode action nobody but the account owner can perform,
-> and is unchecked until you've actually done it. Fill in §5 as-built notes
-> once this ships, matching the 1.0/1.1 pattern.
+> **Status: 🟢 LIVE on the App Store 2026-09-24.** Submitted **2026-09-23**,
+> approved **2026-09-24** — a 1-day turnaround, in the same fast-review range
+> as 1.1's same-day approval and well under 1.0's ~9-day wait — and released
+> manually the same day.
+>
+> This is the as-built record, not a plan. What actually differed from the
+> plan is in [§5 As-built notes](#5-as-built-notes--what-differed).
 
 `MARKETING_VERSION` **1.2** · `CURRENT_PROJECT_VERSION` **3** · Bundle ID
 `com.jrlabapps.CoffeeGrams` · **Universal — iPhone + iPad**, portrait-only
@@ -15,22 +16,21 @@ is `"1,2"`.
 ## What makes this different from 1.1
 
 Same shape as 1.1: a version update to an existing, approved app with no new
-IAP, so it's the four-step flow, not 1.0's eight. Two things are genuinely
-new this time, both worth reading before you start:
+IAP, so it's the four-step flow, not 1.0's eight. Two things were genuinely
+new this time:
 
-| New this release | Why it matters |
+| New this release | Why it mattered |
 |---|---|
-| **A second screenshot set** — iPad, at the **13" Display** size (2064×2752) | This project has picked the wrong ASC screenshot *slot* twice before (6.5" instead of 6.9" for 1.1's upload; nearly the legacy 12.9" instead of the current 13" while researching this release). See §3 — pick the slot by device selector, not by whichever one ASC shows first. |
-| **Rule 2205425 gets its first real test** | The Qodo compliance rule that falsely flagged the submission runbook as missing (documented in memory since 1.1) was edited cloud-side on 2026-08-13, but no PR since then has touched a `Releases/submission_*.md` or `release_*.md` file — the only trigger condition observed so far. **This PR does.** Watch for whether it fires; see §1. |
+| **A second screenshot set** — iPad, at the **13" Display** size (2064×2752) | This project had picked the wrong ASC screenshot *slot* twice before (6.5" instead of 6.9" for 1.1's upload; nearly the legacy 12.9" instead of the current 13" while researching this release). See §5 for how it actually went. |
+| **Rule 2205425's first real test** | The Qodo compliance rule that falsely flagged the submission runbook as missing (documented in memory since 1.1) was edited cloud-side on 2026-08-13. This release's PR (#17) was the first to touch a `Releases/submission_*.md`/`release_*.md` file since — the trigger condition. **Confirmed resolved**, see §5. |
 
-Everything 1.1 already established still holds and does **not** need
-repeating:
+Everything 1.1 already established held, unchanged:
 
-| Skip | Why |
+| Skipped | Why |
 |---|---|
-| §5 of the 1.0 runbook (create the IAP) | `com.jrlabapps.coffeegrams.pro` already exists and is approved. Neither iPad support nor the rating prompt touches IAP. |
-| App-level settings (Category, Price, Age Rating, DSA trader) | Persist across versions; 1.2 changes none of them. |
-| **App Privacy questionnaire** | 1.2 adds `UserDefaults` (rating-prompt state) and a StoreKit review-request call, both on-device / Apple-framework — no data leaves the device, so "Data Not Collected" still holds. Don't re-open the questionnaire; re-opening it only risks contradicting the hosted privacy policy over nothing. |
+| §5 of the 1.0 runbook (create the IAP) | `com.jrlabapps.coffeegrams.pro` already existed and was approved. Neither iPad support nor the rating prompt touches IAP. |
+| App-level settings (Category, Price, Age Rating, DSA trader) | Persist across versions; 1.2 changed none of them. |
+| **App Privacy questionnaire** | 1.2 adds `UserDefaults` (rating-prompt state) and a StoreKit review-request call, both on-device / Apple-framework — no data leaves the device, so "Data Not Collected" still held. Not re-opened. |
 
 ---
 
@@ -47,162 +47,118 @@ repeating:
 
 - [x] **[me]** `MARKETING_VERSION` bumped to **1.2**, `CURRENT_PROJECT_VERSION`
       to **3**, across every build config (verified uniform before the bump —
-      6 occurrences each, app target and both test targets):
-      ```sh
-      grep -c "MARKETING_VERSION = 1.2;" CoffeeGrams/CoffeeGrams.xcodeproj/project.pbxproj      # 6
-      grep -c "CURRENT_PROJECT_VERSION = 3;" CoffeeGrams/CoffeeGrams.xcodeproj/project.pbxproj  # 6
-      ```
-- [x] **[me]** All suites green + warning-free, verified on this branch
-      (`release/1.2-submission-runbook`) after the version bump: Core
-      **61/61** in 5 suites, app `** TEST SUCCEEDED **` on iPhone 17 and iPad
-      Pro 13-inch (M5), Release build clean (the only build output is the
-      usual `appintentsmetadataprocessor` "no AppIntents.framework" info
-      note, not a compiler warning). **Re-run once this branch is merged to
-      `main`** — nothing should differ, but that's what "re-run" means, not
-      "assume". Both destinations, not just iPhone: this is the iPad
-      release, so a merge-introduced regression that only shows up on iPad
-      (the split-view path, the width/height-capped layouts) needs the same
-      re-run discipline as anything iPhone-visible:
-      ```sh
-      (cd CoffeeGramsCore && swift test)
-      (cd CoffeeGrams && COFFEEGRAMS_SWIFTDATA_TESTS=1 xcodebuild test -scheme CoffeeGrams \
-         -destination 'platform=iOS Simulator,name=<latest available iPhone>')
-      (cd CoffeeGrams && COFFEEGRAMS_SWIFTDATA_TESTS=1 xcodebuild test -scheme CoffeeGrams \
-         -destination 'platform=iOS Simulator,name=<latest available iPad>')
-      (cd CoffeeGrams && xcodebuild build -scheme CoffeeGrams -configuration Release \
-         -destination 'generic/platform=iOS Simulator')
-      ```
-- [ ] **[you]** **Merge this PR to `main`**, then `git pull` so you archive
-      the merged code, not this branch.
-- [ ] **[you]** **Watch this PR's Qodo review for rule 2205425.** If it
-      fires again, the 2026-08-13 cloud-side edit didn't hold — dismiss the
-      finding on the PR (per the existing guidance, don't contorting the
-      docs to appease it) and flag it for another look, rather than
-      re-editing the same instructions a second time. If it *doesn't* fire,
-      that's the confirmation this has been waiting on since 1.1 — note it
-      in §5 below either way.
-- [ ] **[you]** **Build number must be higher than any build already
-      uploaded.** Check TestFlight first — ASC rejects a duplicate only
-      *after* the whole archive uploads, wasting the attempt. This is a
-      fresh bump (build **3** has never been used), so it should be clean,
-      but check anyway.
+      6 occurrences each, app target and both test targets).
+- [x] **[me]** All suites green + warning-free, verified after the version
+      bump: Core **61/61** in 5 suites, app `** TEST SUCCEEDED **` on iPhone
+      17 and iPad Pro 13-inch (M5), Release build clean.
+- [x] **[you]** **Merged to `main`** — PR #17, commit `b9a73c6`,
+      2026-09-23.
+- [x] **[you]** **Rule 2205425 — confirmed resolved.** Watched across two
+      Qodo review passes on PR #17 (commits `eaedbaa` and `16035d7`), both
+      of which touched `submission_1.2.md` and `release_1.2.md` — the exact
+      trigger condition. The rule did not fire either time. The 2026-08-13
+      cloud-side fix held. See §5.
+- [x] **[you]** **Build number checked against TestFlight** — build **3**
+      had never been uploaded, upload was clean.
 
 ## 2. Archive → upload
 
-Same as 1.0 §4 and 1.1 §2 — signing, certificate, and App ID are all already
-in place, and nothing about iPad support changes this (no new capability,
-entitlement, or provisioning needed — `TARGETED_DEVICE_FAMILY` is a build
-setting, not a signing concern).
-
-- [ ] **[you]** Xcode → destination **Any iOS Device (arm64)** (you cannot
-      archive against a simulator).
-- [ ] **[you]** **Product → Archive**.
-- [ ] **[you]** Organizer → **Distribute App** → **App Store Connect** →
-      **Upload**.
-- [ ] **[you]** Wait for the "processing" email, or watch ASC →
-      **TestFlight**. A build that never appears has almost always failed
-      processing — check email for the reason.
-- [ ] **[you]** **TestFlight sanity pass on a real device before
-      submitting** — this time on **both an iPhone and an iPad**, since
-      iPad is genuinely new hardware for this app, not just a new code path
-      tested only in Simulator. Walk: the iPad sidebar + detail pane
-      (select a method, confirm the calculator shows beside the list, not
-      instead of it), a full French Press brew end to end, and — if you
-      happen to have a build already past 7 days old with 3+ brews logged —
-      rating a brew 4–5 stars to see whether the system review sheet
-      appears (informational only; nothing in this runbook depends on it
-      firing, since the API gives no feedback and Simulator never rendered
-      it during development either).
+- [x] **[you]** Archived from `main` at `b9a73c6` (destination: **Any iOS
+      Device (arm64)**).
+- [x] **[you]** **Product → Archive**, then **Distribute App → App Store
+      Connect → Upload**.
+- [x] **[you]** Processing completed without issue.
+- [x] **[you]** **TestFlight sanity pass on a real iPhone and a real iPad**
+      — passed. iPad sidebar + detail pane confirmed working (method
+      selection updates the detail pane correctly), full French Press brew
+      end-to-end confirmed on both devices.
 
 ## 3. Version page
 
-- [ ] **[you]** ASC → the app → **+ Version or Platform** → **iOS** → enter
-      **1.2**.
-- [ ] **[you]** **What's New in This Version** — copy from
-      [`release_1.2.md`](release_1.2.md#whats-new-draft-copy) (also
-      reproduced below).
-- [ ] **[you]** **Build** — select the build you just uploaded.
-- [ ] **[you]** ⚠️ **iPhone screenshots — re-verified for 1.2, ready to
-      upload as-is.** Audited 2026-09-01 against the actual shipped 1.2
-      code (not assumed from the 1.1 notes — this project has shipped a
-      screenshot miss before): `01-home.png`, `02-calculator.png`,
-      `03-guided-timer.png`, and `04-paywall.png` were all recaptured fresh
-      via `capture.sh` (iPad support and the rating prompt are both no-ops
-      on iPhone's visible UI, so no change was expected). `02-calculator.png`
-      came back **byte-identical** to the already-tracked file — that's why
-      it doesn't show up in this PR's diff alongside the other three; it was
-      genuinely re-captured and confirmed, not skipped. `05-brew-log.png`
-      stays as the existing asset, same reasoning 1.1 already recorded — the
-      log screen didn't meaningfully change again. Nothing here needs
-      recapturing before upload; these are current.
-- [ ] **[you]** ⚠️ **iPad screenshots — a new set, uploaded for the first
-      time. Get the slot right.** In *App Previews and Screenshots*, use
-      the device-size selector to pick **13" Display** — do **not** use
-      whichever slot ASC happens to show first, and do **not** use the
-      legacy **12.9" Display** slot (that one is optional; Apple scales the
-      13" set down for it automatically if you skip it, per Apple's current
-      screenshot-specifications documentation). This is the same mistake
-      class as 1.1's 6.5"-vs-6.9" mixup, on a slot this app has never
-      populated before, so there's no existing correct upload to copy the
-      pattern from — slow down here specifically.
-
-      Upload all five from `Releases/screenshots/ipad/`, in order:
-
-      | # | File | Screen |
-      |---|------|--------|
-      | 1 | `01-home.png` | Home — sidebar method list + empty detail pane |
-      | 2 | `02-calculator.png` | Calculator for French Press, shown in the detail pane |
-      | 3 | `03-guided-timer.png` | Guided brew running, in the detail pane |
-      | 4 | `04-paywall.png` | CoffeeGrams Pro paywall |
-      | 5 | `05-brew-log.png` | Brew log — one plain entry (see `screenshots/README.md` for why this is plainer than the iPhone set) |
-
-      **Recapturing, if you ever need to redo them** — one command from the
-      repo root, same harness as iPhone, parameterized by platform:
-      ```sh
-      CG_PLATFORM=ipad ./Releases/screenshots/capture.sh                  # all five
-      CG_PLATFORM=ipad ./Releases/screenshots/capture.sh 05-brew-log      # just one
-      ```
-      Full detail on the harness, override variables, and the
-      iPhone/iPad asymmetry around `05-brew-log`:
-      [`screenshots/README.md`](screenshots/README.md).
-- [ ] **[you]** **Description / keywords / promotional text** — unchanged
-      from 1.1 unless you want to work "now on iPad" into the description.
-- [ ] **[you]** **Version Release** → **Manually release this version**.
-- [ ] **[you]** **Review notes** — no demo account needed, same as 1.1; Pro
-      is a one-time IAP and the reviewer can exercise French Press without
-      it. Worth a one-line note that the app is now universal, so the
-      reviewer knows to expect iPad testing.
+- [x] **[you]** Version **1.2** created in ASC.
+- [x] **[you]** **What's New** copy entered (see *Copy-paste metadata*
+      below).
+- [x] **[you]** Build selected.
+- [x] **[you]** **iPhone screenshots** uploaded — the four re-verified/
+      recaptured assets plus the unchanged `05-brew-log.png`.
+- [x] **[you]** **iPad screenshots** uploaded to the **13" Display** slot.
+      See §5 for how the slot-selection risk this section flagged actually
+      played out.
+- [x] **[you]** **Version Release** set to **Manually release this
+      version**.
+- [x] **[you]** Review notes added (no demo account needed).
 
 ## 4. Review Submission
 
-- [ ] **[you]** ASC → **Review Submission** → **Add to Review** → the
-      **1.2 app version only**.
-- [ ] **[you]** ⚠️ **Do not add the IAP as a second item.** Same trap 1.1's
-      runbook warned about — re-adding an already-approved IAP is the most
-      likely mistake on this step.
-- [ ] **[you]** **Submit to App Review**.
+- [x] **[you]** **Submitted 2026-09-23**, one item — the 1.2 app version
+      only. The IAP was not re-added.
+- [x] **[you]** **Submit to App Review** clicked.
 
 ## After submitting
 
-- Status goes **Waiting for Review** → **In Review** → **Pending Developer
-  Release** (because release is Manual).
-- [ ] **[you]** Record the submission date here once you've submitted.
-- [ ] **[you]** Record the approval date and any reviewer notes.
-- [ ] **[you]** Click **Release This Version** when ready, and record that
-      date.
-- [ ] **[you]** Update this file to **AS-BUILT** — status banner, dates, and
-      §5 below — matching how `submission_1.1.md` was closed out.
+- [x] **Approved 2026-09-24** — 1-day turnaround.
+- [x] **Released 2026-09-24** — clicked **Release This Version** the same
+      day it was approved.
+- [x] **[you]** Updated to **AS-BUILT** (this revision).
 - [ ] **[you]** Per the Retrospective Standard, add the 1.2 notes to
       `CoffeeGrams_Summary.md` in the private `Summary` repo, including the
-      **AI-agent process review** checkpoint.
+      **AI-agent process review** checkpoint. *(Still open — see below.)*
 
 ---
 
 ## 5. As-built notes — what differed
 
-*Fill in once submitted. Carry forward anything from 1.1's own §5 that
-proves relevant again (the screenshot-slot mixup mode in particular — see
-whether the 13" slot warning above actually prevented a repeat).*
+### Rule 2205425 — confirmed resolved
+
+Watched across both Qodo review passes on PR #17 (commits `eaedbaa` and
+`16035d7`), both of which touched `submission_1.2.md` and `release_1.2.md` —
+the exact trigger condition documented since 1.1. The rule did not fire
+either time. The 2026-08-13 cloud-side fix (instructing the checker to
+determine existence from the PR's actual file listing, not from other docs'
+headers) held. This closes the loop opened in `submission_1.1.md` §5 — no
+further action needed on this rule going forward.
+
+### The string catalog followed the UI changes in, again
+
+Archiving for this release regenerated `Localizable.xcstrings`, exactly as
+it did for 1.1 (see `submission_1.1.md` §5, "The string catalog followed the
+UI changes in, unnoticed"). Two things happened:
+
+- **Xcode stripped `"isCommentAutoGenerated" : false`** off four keys that
+  had deliberately hand-written comments (`+%@`,
+  `calculator.dismissKeypad.done`, `guidedBrew.finalStep.done`,
+  `guidedBrew.manualStep.next`) — silently reverting them to "auto-generated"
+  ownership, which means Xcode could overwrite their (currently still
+  correct) text on a future build.
+- **Two new keys appeared** from the iPad empty-state screen
+  (`MethodPickerView`'s `ContentUnavailableView`, added during the iPad PR
+  but apparently never committed with the catalog synced): `"Choose a brew
+  method"` and `"Pick a method from the list to start."` — the second with
+  **no comment at all**, the same "empty object" defect 1.1 found on
+  `"TOTAL"`.
+
+This was caught by reviewing the diff after archiving, before it could ride
+into a commit unreviewed — but it's now the **second** release in a row
+where this happened. **For next time:** treat `xcstrings` regeneration as an
+expected side effect of every archive, not a surprise — diff it immediately
+after archiving, before staging anything else, rather than discovering it
+buried in a later `git status`. Filed as its own fix (see the fix commit
+alongside this update, restoring the four flags and writing real comments
+for the two new keys).
+
+*(Fill in any screenshot-slot experience here once confirmed — the previous
+draft flagged the 13" vs. 12.9" ASC slot as this release's specific new-
+territory risk.)*
+
+### What went exactly to plan
+
+- **1-day review turnaround** — in the same fast range as 1.1's same-day
+  approval, confirming a small update with no new IAP and no App Privacy
+  change continues to review quickly.
+- **One review item** — the IAP trap the runbook repeatedly warned about did
+  not catch this release either.
+- **TestFlight pass on both devices came back clean** — no iPad-specific
+  regression surfaced that Simulator testing had missed.
 
 ---
 
@@ -225,20 +181,21 @@ CoffeeGrams now runs great on iPad.
 - **Support email:** info@jrlabapps.com
 - **Category:** Food & Drink · **Age rating:** 4+
 - **IAP:** `com.jrlabapps.coffeegrams.pro` — $4.99, non-consumable, already approved
-- **App Privacy:** Data Not Collected (no third-party SDKs, no tracking — still true in 1.2; see the table in §*What makes this different* above for why the new `UserDefaults` use doesn't change this)
+- **App Privacy:** Data Not Collected (no third-party SDKs, no tracking — still true in 1.2)
 
 ---
 
 ## Carry these into the next release
 
-Everything 1.1 carried forward still applies (screenshot slot discipline,
-archiving from `main` after merge, checking TestFlight before archiving, one
-item in the Review Submission, not re-answering App Privacy). Add, once this
-one closes out:
-
-- **Whatever §5 above records about rule 2205425** — this is the release
-  that either confirms the cloud-side fix held, or tells us it needs another
-  look.
-- **The 13" screenshot slot**, now that this app has populated it once
-  correctly (assuming it went well) — future iPad-affecting releases have a
-  known-good pattern to repeat instead of research from scratch.
+- **Diff `Localizable.xcstrings` immediately after every archive**, before
+  doing anything else — this is the second release running where archiving
+  silently reverted hand-written-comment ownership and added an
+  uncommented key. A five-second `git diff` habit catches it before it rides
+  into an unrelated commit.
+- **Screenshot slot discipline** — pick the ASC device-size slot by the
+  selector, never by whichever one the page shows first. Now proven across
+  three releases (1.1's 6.5"/6.9" mixup, this release's near-miss during
+  research, and — fill in — how the actual upload went).
+- **Archiving from `main` after merge**, checking TestFlight before
+  archiving, one item in the Review Submission, not re-answering App
+  Privacy — all continue to hold.
